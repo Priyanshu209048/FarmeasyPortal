@@ -9,7 +9,5 @@ CREATE TABLE scheme (
     roi                 VARCHAR(255),
     tenure              VARCHAR(255),
     scheme_type         VARCHAR(255),
-    bank_id             INT NOT NULL,
-
-    CONSTRAINT fk_scheme_bank FOREIGN KEY (bank_id) REFERENCES bank(id)
+    bank_id             INT NOT NULL
 ) ENGINE=InnoDB;

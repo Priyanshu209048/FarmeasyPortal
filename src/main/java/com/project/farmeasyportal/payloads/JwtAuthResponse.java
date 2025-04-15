@@ -9,5 +9,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class JwtAuthResponse {
     private String accessToken;
-    //private UserDTO user;
+    private UserDTO user;
 }
