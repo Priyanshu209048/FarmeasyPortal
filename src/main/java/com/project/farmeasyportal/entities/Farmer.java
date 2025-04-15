@@ -38,11 +38,11 @@ public class Farmer {
     @Column(name = "PASSWORD")
     private String password;
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "farmer")
+    /*@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "farmer")
     private List<Apply> apply = new ArrayList<>();
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "farmer")
-    private List<Grievences> grievences = new ArrayList<>();
+    private List<Grievences> grievences = new ArrayList<>();*/
 
     /*@ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinTable(name = "farmer_scheme", joinColumns = @JoinColumn(name = "farmer", referencedColumnName = "user_id"),

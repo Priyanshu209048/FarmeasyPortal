@@ -18,7 +18,7 @@ public class Apply {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @ManyToOne
+    /*@ManyToOne
     @JoinColumn(name = "farmer_id", nullable = false)
     private Farmer farmer;
 
@@ -28,7 +28,16 @@ public class Apply {
 
     @ManyToOne
     @JoinColumn(name = "bank_id", nullable = false)
-    private Bank bank;
+    private Bank bank;*/
+
+    @Column(name = "farmer_id", nullable = false)
+    private String farmerId;
+
+    @Column(name = "scheme_id", nullable = false)
+    private String schemeId;
+
+    @Column(name = "bank_id", nullable = false)
+    private String bankId;
 
     @Column(name = "date", nullable = false)
     private LocalDate date;

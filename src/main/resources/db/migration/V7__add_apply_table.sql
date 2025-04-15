@@ -7,9 +7,5 @@ CREATE TABLE apply (
     status_date VARCHAR(255),
     amount      VARCHAR(255) NOT NULL,
     status      VARCHAR(255) NOT NULL,
-    review      VARCHAR(255),
-
-    CONSTRAINT fk_apply_farmer FOREIGN KEY (farmer_id) REFERENCES farmer(USER_ID),
-    CONSTRAINT fk_apply_scheme FOREIGN KEY (scheme_id) REFERENCES scheme(id),
-    CONSTRAINT fk_apply_bank FOREIGN KEY (bank_id) REFERENCES bank(id)
+    review      VARCHAR(255)
 ) ENGINE=InnoDB;

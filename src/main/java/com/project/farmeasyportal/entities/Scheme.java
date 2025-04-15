@@ -30,11 +30,14 @@ public class Scheme {
     private String tenure;
     private String schemeType;
 
-    @ManyToOne
+    @Column(name = "bank_id", nullable = false)
+    private String bankId;
+
+    /*@ManyToOne
     @JoinColumn(name = "bank_id", nullable = false)
     private Bank bank;
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "scheme")
-    private List<Apply> apply = new ArrayList<>();
+    private List<Apply> apply = new ArrayList<>();*/
 
 }
