@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -107,16 +108,17 @@ public class SecurityConfiguration {
 
         http.authorizeHttpRequests(request -> {
                     request.requestMatchers("/api/v1/gov/**").hasRole("GOV");
+                    request.requestMatchers(HttpMethod.GET).permitAll();
                     request.requestMatchers("/api/v1/bank/**").hasRole("BANK");
                     request.requestMatchers("/api/v1/farmer/**").hasRole("FARMER");
                     request.requestMatchers("/**").permitAll();
                     request.requestMatchers(PUBLIC_URLS).permitAll();
                     request.anyRequest().authenticated();
                 })
-                .formLogin(form -> form.loginPage("/farmerLogin")
-                        .loginProcessingUrl("/do_login")
+                .formLogin(form -> form.loginPage("/login")
+                        .loginProcessingUrl("/login")
                         .successHandler(new CustomSuccessHandler())
-                        .failureUrl("/farmerLogin?error=true"))
+                        .failureUrl("/login?error=true"))
                 .logout(httpSecurityLogoutConfigurer -> httpSecurityLogoutConfigurer.logoutUrl("/logout").permitAll())
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(jwtAuthenticationEntryPoint))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

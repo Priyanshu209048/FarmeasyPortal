@@ -17,7 +17,7 @@ import lombok.Setter;
 public class FarmerDTO {
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    private int id;
+    private String id;
 
     @NotBlank(message = "First Name can not be empty !!")
     @Size(min = 2,max = 20,message = "First name must be between 2 - 20 characters")
