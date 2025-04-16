@@ -19,13 +19,12 @@ public class UserDTO {
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private int id;
 
-    @Column(unique = true)
     @Email(regexp = "^[a-zA-Z0-9+_.-]+@[a-zA-Z0-9.-]+$")
     @NotBlank(message = "E-Mail can not be empty !!")
     private String email;
 
     @NotBlank(message = "Password is mandatory")
-    @Size(min = 5, max = 15, message = "Password must contain minimum 5 characters and maximum of 15 characters ")
+    @Size(min = 4, max = 15, message = "Password must contain minimum 5 characters and maximum of 15 characters ")
     private String password;
 
     private String role;

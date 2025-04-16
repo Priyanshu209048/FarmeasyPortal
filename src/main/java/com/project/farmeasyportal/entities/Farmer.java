@@ -18,9 +18,7 @@ public class Farmer {
 
     @Id
     @Column(name = "USER_ID")
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "user_seq")
-    @SequenceGenerator(name = "user_seq", allocationSize = 1)
-    private int id;
+    private String id;
 
     @Column(name = "FIRST_NAME")
     private String firstName;

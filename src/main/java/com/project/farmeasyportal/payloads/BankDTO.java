@@ -17,7 +17,7 @@ import lombok.Setter;
 public class BankDTO {
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    private int id;
+    private String id;
 
     @NotBlank(message = "Bank Name can not be empty !!")
     @Size(min = 3,max = 20,message = "Bank name must be between 2 - 20 characters")
@@ -42,5 +42,9 @@ public class BankDTO {
 
     @NotBlank(message = "Bank phone number cannot be null")
     private String bankPhone;
+
+    @NotBlank(message = "Password is mandatory")
+    @Size(min = 5, max = 15, message = "Password must contain minimum 5 characters and maximum of 15 characters ")
+    private String password;
 
 }

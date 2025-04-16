@@ -15,8 +15,7 @@ import lombok.Setter;
 public class Bank {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private String id;
 
     private String bankName;
     private String bankAddress;
@@ -25,6 +24,7 @@ public class Bank {
     private String bankZip;
     private String email;
     private String bankPhone;
+    private String password;
 
     /*@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "bank")
     private List<Scheme> schemes = new ArrayList<>();
