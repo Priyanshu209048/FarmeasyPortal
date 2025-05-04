@@ -9,6 +9,6 @@ import java.util.List;
 
 @Repository
 public interface SchemeDao extends JpaRepository<Scheme, Integer> {
-    /*Scheme findByBank(Bank bank);
-    List<Scheme> findAllByBank(Bank bank);*/
+    Scheme findByBankId(String bank);
+    List<Scheme> findAllByBankId(String bank);
 }

@@ -1,15 +1,21 @@
 package com.project.farmeasyportal.controllers;
 
+import com.project.farmeasyportal.entities.Farmer;
 import com.project.farmeasyportal.payloads.ApiResponse;
 import com.project.farmeasyportal.payloads.FarmerDTO;
+import com.project.farmeasyportal.payloads.LoanFormDTO;
 import com.project.farmeasyportal.services.FarmerService;
 import jakarta.validation.Valid;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -71,6 +77,22 @@ public class FarmerController {
         this.farmerService.deleteFarmer(farmerID);
         log.info("User deleted successfully : {}", farmerID);
         return new ResponseEntity<>(new ApiResponse("User Deleted Successfully!!"), HttpStatus.OK);
+    }
+
+    @PostMapping(value = "/form", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> loanFormProcess(@RequestBody @Valid LoanFormDTO loanFormDTO,
+                                             @RequestPart("documents") MultipartFile file,
+                                             Authentication authentication) throws IOException {
+
+        // Ensure the authenticated user is the same as the loan form's email
+        if (!loanFormDTO.getEmail().equals(authentication.getName())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Unauthorized access.");
+        }
+
+        FarmerDTO farmerDTO = this.farmerService.getFarmerByEmail(authentication.getName());
+        this.farmerService.submitForm(loanFormDTO, file, farmerDTO.getId());
+
+        return ResponseEntity.ok("Loan form submitted successfully.");
     }
 
 }
