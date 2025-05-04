@@ -5,6 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface BankDao extends JpaRepository<Bank, Integer> {
+public interface BankDao extends JpaRepository<Bank, String> {
     Bank findByEmail(String email);
 }

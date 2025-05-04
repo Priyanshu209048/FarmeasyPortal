@@ -4,6 +4,8 @@ import com.project.farmeasyportal.entities.Farmer;
 import com.project.farmeasyportal.entities.Grievences;
 import com.project.farmeasyportal.entities.LoanForm;
 import com.project.farmeasyportal.payloads.FarmerDTO;
+import com.project.farmeasyportal.payloads.GrievencesDTO;
+import com.project.farmeasyportal.payloads.LoanFormDTO;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -20,11 +22,11 @@ public interface FarmerService {
     Boolean isFarmerExistByEmail(String id);
     Boolean isFarmerExistById(String id);
 
-    void submitForm(LoanForm loanForm, MultipartFile file, String fileName, int userId) throws IOException;
+    void submitForm(LoanFormDTO loanFormDTO, MultipartFile file, String userId) throws IOException;
     Boolean isUserSubmittedForm(String email);
-    LoanForm getLoanFormByEmail(String email);
-    LoanForm updateLoanForm(LoanForm loanForm);
+    LoanFormDTO getLoanFormByEmail(String email);
+    LoanFormDTO updateLoanForm(LoanFormDTO loanFormDTO);
 
-    void addGrievence(Grievences grievence, Farmer farmer);
+    void addGrievence(GrievencesDTO grievencesDTO, FarmerDTO farmerDTO);
 
 }

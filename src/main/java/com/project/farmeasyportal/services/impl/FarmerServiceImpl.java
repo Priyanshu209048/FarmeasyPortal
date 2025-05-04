@@ -1,6 +1,8 @@
 package com.project.farmeasyportal.services.impl;
 
 import com.project.farmeasyportal.dao.FarmerDao;
+import com.project.farmeasyportal.dao.GrievencesDao;
+import com.project.farmeasyportal.dao.LoanFormDao;
 import com.project.farmeasyportal.dao.UserDao;
 import com.project.farmeasyportal.entities.Farmer;
 import com.project.farmeasyportal.entities.Grievences;
@@ -8,6 +10,8 @@ import com.project.farmeasyportal.entities.LoanForm;
 import com.project.farmeasyportal.entities.User;
 import com.project.farmeasyportal.exceptions.ResourceNotFoundException;
 import com.project.farmeasyportal.payloads.FarmerDTO;
+import com.project.farmeasyportal.payloads.GrievencesDTO;
+import com.project.farmeasyportal.payloads.LoanFormDTO;
 import com.project.farmeasyportal.services.FarmerService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -16,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -24,10 +29,14 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class FarmerServiceImpl implements FarmerService {
 
+    public static String uploadDir = System.getProperty("user.dir") + "/src/main/resources/static/documents";
+
     private final FarmerDao farmerDao;
     private final UserDao userDao;
+    private final LoanFormDao loanFormDao;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final ModelMapper modelMapper;
+    private final GrievencesDao grievencesDao;
 
     @Override
     public FarmerDTO saveFarmer(FarmerDTO farmerDTO) {
@@ -99,27 +108,38 @@ public class FarmerServiceImpl implements FarmerService {
     }
 
     @Override
-    public void submitForm(LoanForm loanForm, MultipartFile file, String fileName, int userId) throws IOException {
+    public void submitForm(LoanFormDTO loanFormDTO, MultipartFile file, String userId) throws IOException {
 
     }
 
     @Override
     public Boolean isUserSubmittedForm(String email) {
-        return null;
+        return loanFormDao.existsByEmail(email);
     }
 
     @Override
-    public LoanForm getLoanFormByEmail(String email) {
-        return null;
+    public LoanFormDTO getLoanFormByEmail(String email) {
+        LoanForm loanForm = loanFormDao.findByEmail(email);
+        return this.modelMapper.map(loanForm, LoanFormDTO.class);
     }
 
     @Override
-    public LoanForm updateLoanForm(LoanForm loanForm) {
-        return null;
+    public LoanFormDTO updateLoanForm(LoanFormDTO loanFormDTO) {
+        LoanForm loanForm = this.modelMapper.map(loanFormDTO, LoanForm.class);
+        this.loanFormDao.save(loanForm);
+        return this.modelMapper.map(loanForm, LoanFormDTO.class);
     }
 
     @Override
-    public void addGrievence(Grievences grievence, Farmer farmer) {
+    public void addGrievence(GrievencesDTO grievencesDTO, FarmerDTO farmerDTO) {
+        Grievences grievence = this.modelMapper.map(grievencesDTO, Grievences.class);
+        Farmer farmer = this.modelMapper.map(farmerDTO, Farmer.class);
 
+        grievence.setFarmerId(farmer.getId());
+        grievence.setGrievencesDate(LocalDate.now());
+        grievence.setGrievencesReview("-");
+        grievence.setGrievencesStatus("-");
+
+        this.grievencesDao.save(grievence);
     }
 }
