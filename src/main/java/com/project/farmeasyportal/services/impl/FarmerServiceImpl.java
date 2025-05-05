@@ -20,6 +20,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -73,7 +76,7 @@ public class FarmerServiceImpl implements FarmerService {
 
     @Override
     public FarmerDTO getFarmerByEmail(String email) {
-        Farmer farmer = this.farmerDao.findById(email).orElseThrow(() -> new ResourceNotFoundException("Farmer", "email", email));
+        Farmer farmer = this.farmerDao.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("Farmer", "email", email));
         return this.modelMapper.map(farmer, FarmerDTO.class);
     }
 
@@ -108,8 +111,29 @@ public class FarmerServiceImpl implements FarmerService {
     }
 
     @Override
-    public void submitForm(LoanFormDTO loanFormDTO, MultipartFile file, String userId) throws IOException {
+    public void submitForm(LoanFormDTO loanFormDTO, MultipartFile file, String originalFileName, String userId) throws IOException {
+        LoanForm loanForm = this.modelMapper.map(loanFormDTO, LoanForm.class);
 
+        String storedPdfName;
+
+        if (!file.isEmpty()) {
+            String timestamp = String.valueOf(System.currentTimeMillis());
+            storedPdfName = userId + "_" + timestamp + ".pdf";
+
+            Path directoryPath = Paths.get(uploadDir);
+            if (Files.notExists(directoryPath)) {
+                Files.createDirectories(directoryPath);
+            }
+
+            Path filePath = directoryPath.resolve(storedPdfName);
+            Files.write(filePath, file.getBytes());
+        } else {
+            storedPdfName = originalFileName;
+        }
+
+        loanForm.setPdfName(storedPdfName);
+
+        loanFormDao.save(loanForm);
     }
 
     @Override
@@ -123,11 +147,50 @@ public class FarmerServiceImpl implements FarmerService {
         return this.modelMapper.map(loanForm, LoanFormDTO.class);
     }
 
-    @Override
+    /*@Override
     public LoanFormDTO updateLoanForm(LoanFormDTO loanFormDTO) {
         LoanForm loanForm = this.modelMapper.map(loanFormDTO, LoanForm.class);
         this.loanFormDao.save(loanForm);
         return this.modelMapper.map(loanForm, LoanFormDTO.class);
+    }*/
+
+    @Override
+    public LoanFormDTO updateLoanForm(LoanFormDTO loanFormDTO, MultipartFile file, String originalFileName, String userId) throws IOException {
+        LoanForm existingLoanForm = this.loanFormDao.findById(loanFormDTO.getId()).orElseThrow(() -> new ResourceNotFoundException("Loan Form", "id", String.valueOf(loanFormDTO.getId())));
+        String name = existingLoanForm.getName();
+        String email = existingLoanForm.getEmail();
+        String contact = existingLoanForm.getContact();
+        String gender = existingLoanForm.getGender();
+
+        LoanForm loanForm = this.modelMapper.map(loanFormDTO, LoanForm.class);
+
+        loanForm.setId(existingLoanForm.getId());
+        loanForm.setName(name);
+        loanForm.setEmail(email);
+        loanForm.setContact(contact);
+        loanForm.setGender(gender);
+
+        String storedPdfName;
+
+        if (!file.isEmpty()) {
+            String timestamp = String.valueOf(System.currentTimeMillis());
+            storedPdfName = userId + "_" + timestamp + ".pdf";
+
+            Path directoryPath = Paths.get(uploadDir);
+            if (Files.notExists(directoryPath)) {
+                Files.createDirectories(directoryPath);
+            }
+
+            Path filePath = directoryPath.resolve(storedPdfName);
+            Files.write(filePath, file.getBytes());
+        } else {
+            storedPdfName = originalFileName;
+        }
+
+        loanForm.setPdfName(storedPdfName);
+        loanFormDao.save(loanForm);
+
+        return modelMapper.map(loanForm, LoanFormDTO.class);
     }
 
     @Override

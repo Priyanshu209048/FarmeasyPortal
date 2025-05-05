@@ -22,10 +22,10 @@ public interface FarmerService {
     Boolean isFarmerExistByEmail(String id);
     Boolean isFarmerExistById(String id);
 
-    void submitForm(LoanFormDTO loanFormDTO, MultipartFile file, String userId) throws IOException;
+    void submitForm(LoanFormDTO loanFormDTO, MultipartFile file, String originalFileName, String userId) throws IOException;
     Boolean isUserSubmittedForm(String email);
     LoanFormDTO getLoanFormByEmail(String email);
-    LoanFormDTO updateLoanForm(LoanFormDTO loanFormDTO);
+    LoanFormDTO updateLoanForm(LoanFormDTO loanFormDTO, MultipartFile file, String originalFileName, String userId) throws IOException;
 
     void addGrievence(GrievencesDTO grievencesDTO, FarmerDTO farmerDTO);
 

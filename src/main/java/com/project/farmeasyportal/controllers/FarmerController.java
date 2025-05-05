@@ -1,5 +1,6 @@
 package com.project.farmeasyportal.controllers;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.farmeasyportal.entities.Farmer;
 import com.project.farmeasyportal.payloads.ApiResponse;
 import com.project.farmeasyportal.payloads.FarmerDTO;
@@ -80,19 +81,23 @@ public class FarmerController {
     }
 
     @PostMapping(value = "/form", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> loanFormProcess(@RequestBody @Valid LoanFormDTO loanFormDTO,
+    public ResponseEntity<?> loanFormProcess(@RequestPart("loanForm") @Valid String loanFormJson,
                                              @RequestPart("documents") MultipartFile file,
                                              Authentication authentication) throws IOException {
 
-        // Ensure the authenticated user is the same as the loan form's email
+        ObjectMapper mapper = new ObjectMapper();
+        LoanFormDTO loanFormDTO = mapper.readValue(loanFormJson, LoanFormDTO.class);
+
         if (!loanFormDTO.getEmail().equals(authentication.getName())) {
+            log.error("Unauthorized access.");
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Unauthorized access.");
         }
 
         FarmerDTO farmerDTO = this.farmerService.getFarmerByEmail(authentication.getName());
-        this.farmerService.submitForm(loanFormDTO, file, farmerDTO.getId());
+        String originalFileName = file.getOriginalFilename();
+        this.farmerService.submitForm(loanFormDTO, file, originalFileName, farmerDTO.getId());
 
-        return ResponseEntity.ok("Loan form submitted successfully.");
+        return new ResponseEntity<>("Loan form submitted successfully.", HttpStatus.OK);
     }
 
 }
