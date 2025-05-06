@@ -147,13 +147,6 @@ public class FarmerServiceImpl implements FarmerService {
         return this.modelMapper.map(loanForm, LoanFormDTO.class);
     }
 
-    /*@Override
-    public LoanFormDTO updateLoanForm(LoanFormDTO loanFormDTO) {
-        LoanForm loanForm = this.modelMapper.map(loanFormDTO, LoanForm.class);
-        this.loanFormDao.save(loanForm);
-        return this.modelMapper.map(loanForm, LoanFormDTO.class);
-    }*/
-
     @Override
     public LoanFormDTO updateLoanForm(LoanFormDTO loanFormDTO, MultipartFile file, String originalFileName, String userId) throws IOException {
         LoanForm existingLoanForm = this.loanFormDao.findById(loanFormDTO.getId()).orElseThrow(() -> new ResourceNotFoundException("Loan Form", "id", String.valueOf(loanFormDTO.getId())));
