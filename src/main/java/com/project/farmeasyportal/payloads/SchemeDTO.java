@@ -12,7 +12,6 @@ public class SchemeDTO {
     private String roi;
     private String tenure;
     private String schemeType;
-    private String bankId;
 
     private BankDTO bankDTO;
 

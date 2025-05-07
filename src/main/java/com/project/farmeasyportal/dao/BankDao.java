@@ -7,4 +7,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface BankDao extends JpaRepository<Bank, String> {
     Bank findByEmail(String email);
+    Boolean existsByEmail(String email);
 }

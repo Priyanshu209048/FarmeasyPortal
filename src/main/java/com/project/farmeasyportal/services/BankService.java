@@ -10,10 +10,13 @@ import java.util.List;
 
 public interface BankService {
 
-    //void addBank(String email, String password, String role, int bankId);
-    Scheme addScheme(SchemeDTO schemeDTO, String bankId);
+    BankDTO addBank(BankDTO bankDTO);
+    BankDTO getBankById(String bankId);
     List<BankDTO> getBanks();
+    Boolean isBankExistById(String bankId);
+    Boolean isBankExistByEmail(String email);
 
+    SchemeDTO addScheme(SchemeDTO schemeDTO, String bankId);
     List<SchemeDTO> getSchemes(String username);
     public List<SchemeDTO> getSchemes();
 
