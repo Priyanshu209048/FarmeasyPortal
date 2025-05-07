@@ -5,9 +5,11 @@ import com.project.farmeasyportal.entities.User;
 import com.project.farmeasyportal.exceptions.ResourceNotFoundException;
 import com.project.farmeasyportal.payloads.*;
 import com.project.farmeasyportal.dao.UserDao;
+import com.project.farmeasyportal.services.BankService;
 import com.project.farmeasyportal.services.FarmerService;
 import com.project.farmeasyportal.services.UserService;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -24,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/auth")
+@RequiredArgsConstructor
 public class AuthController {
 
     private final JwtTokenHelper jwtTokenHelper;
@@ -33,17 +36,7 @@ public class AuthController {
     private final ModelMapper modelMapper;
     private final UserDao userDao;
     private final FarmerService farmerService;
-
-    @Autowired
-    public AuthController(JwtTokenHelper jwtTokenHelper, UserDetailsService userDetailsService, AuthenticationManager authenticationManager, UserService userService, ModelMapper modelMapper, UserDao userDao, FarmerService farmerService) {
-        this.jwtTokenHelper = jwtTokenHelper;
-        this.userDetailsService = userDetailsService;
-        this.authenticationManager = authenticationManager;
-        this.userService = userService;
-        this.modelMapper = modelMapper;
-        this.userDao = userDao;
-        this.farmerService = farmerService;
-    }
+    private final BankService bankService;
 
     @PostMapping("/login")
     public ResponseEntity<JwtAuthResponse> createToken(@RequestBody JwtAuthRequest request){
@@ -78,17 +71,17 @@ public class AuthController {
         return new ResponseEntity<>(farmerRegistered, HttpStatus.CREATED);
     }
 
-    /*@PostMapping("/register/bank")
+    @PostMapping("/register/bank")
     public ResponseEntity<?> registerBank(@RequestBody @Valid BankDTO bankDTO) {
-        if (userService.isUserExistByEmail(bankDTO.getEmail())) {
-            return new ResponseEntity<>(new ApiResponse("User already exists"), HttpStatus.CONFLICT);
+        if (this.bankService.isBankExistByEmail(bankDTO.getEmail())) {
+            return new ResponseEntity<>(new ApiResponse("Bank already exists !!"), HttpStatus.CONFLICT);
         }
 
-        bankService.createBankDetails(user, bankDTO);
+        BankDTO bank = this.bankService.addBank(bankDTO);
         return new ResponseEntity<>(new ApiResponse("Bank registered successfully"), HttpStatus.CREATED);
     }
 
-    @PostMapping("/register/government")
+    /*@PostMapping("/register/government")
     public ResponseEntity<?> registerGov(@RequestBody @Valid GovernmentDTO governmentDTO) {
         if (userService.isUserExistByEmail(governmentDTO.getEmail())) {
             return new ResponseEntity<>(new ApiResponse("User already exists"), HttpStatus.CONFLICT);

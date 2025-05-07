@@ -1,10 +1,7 @@
 package com.project.farmeasyportal.services.impl;
 
 import com.project.farmeasyportal.dao.*;
-import com.project.farmeasyportal.entities.Apply;
-import com.project.farmeasyportal.entities.Bank;
-import com.project.farmeasyportal.entities.Farmer;
-import com.project.farmeasyportal.entities.Scheme;
+import com.project.farmeasyportal.entities.*;
 import com.project.farmeasyportal.exceptions.ResourceNotFoundException;
 import com.project.farmeasyportal.payloads.ApplyDTO;
 import com.project.farmeasyportal.payloads.BankDTO;
@@ -14,11 +11,13 @@ import com.project.farmeasyportal.services.BankService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -29,23 +28,63 @@ public class BankServiceImpl implements BankService {
     private final SchemeDao schemeDao;
     private final BankDao bankDao;
     private final ApplyDao applyDao;
+    private final UserDao userDao;
+    private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final ModelMapper modelMapper;
     private final GrievencesDao grievencesDao;
 
     @Override
-    public Scheme addScheme(SchemeDTO schemeDTO, String bankId) {
+    public BankDTO addBank(BankDTO bankDTO) {
+        if (bankDTO.getPassword() == null) {
+            throw new IllegalArgumentException("Password cannot be null");
+        }
+
+        String encodedPassword = bCryptPasswordEncoder.encode(bankDTO.getPassword());
+
+        bankDTO.setPassword(encodedPassword);
+        bankDTO.setId(String.valueOf(UUID.randomUUID()));
+
+        Bank bank = this.modelMapper.map(bankDTO, Bank.class);
+
+        User user = new User();
+        user.setEmail(bank.getEmail());
+        user.setPassword(encodedPassword);
+        user.setRole("ROLE_BANK");
+        userDao.save(user);
+        Bank save = this.bankDao.save(bank);
+        return this.modelMapper.map(save, BankDTO.class);
+    }
+
+    @Override
+    public BankDTO getBankById(String bankId) {
+        Bank bank = this.bankDao.findById(bankId).orElseThrow(() ->  new ResourceNotFoundException("Bank", "id", bankId));
+        return this.modelMapper.map(bank, BankDTO.class);
+    }
+
+    @Override
+    public SchemeDTO addScheme(SchemeDTO schemeDTO, String bankId) {
         Scheme scheme = modelMapper.map(schemeDTO, Scheme.class);
         Bank bank = this.bankDao.findById(bankId).orElseThrow(() ->  new ResourceNotFoundException("Bank", "id", bankId));
 
         scheme.setBankId(bank.getId());
         Scheme save = schemeDao.save(scheme);
-        return this.modelMapper.map(save, Scheme.class);
+        return this.modelMapper.map(save, SchemeDTO.class);
     }
 
     @Override
     public List<BankDTO> getBanks() {
         List<Bank> bankList = this.bankDao.findAll();
         return bankList.stream().map(bank -> this.modelMapper.map(bank, BankDTO.class)).collect(Collectors.toList());
+    }
+
+    @Override
+    public Boolean isBankExistById(String bankId) {
+        return this.bankDao.existsById(bankId);
+    }
+
+    @Override
+    public Boolean isBankExistByEmail(String email) {
+        return this.bankDao.existsByEmail(email);
     }
 
     @Override
