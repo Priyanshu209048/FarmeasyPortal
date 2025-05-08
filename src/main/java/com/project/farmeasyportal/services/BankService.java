@@ -17,8 +17,9 @@ public interface BankService {
     Boolean isBankExistByEmail(String email);
 
     SchemeDTO addScheme(SchemeDTO schemeDTO, String bankId);
-    List<SchemeDTO> getSchemes(String username);
-    public List<SchemeDTO> getSchemes();
+    SchemeDTO updateScheme(SchemeDTO schemeDTO, Integer schemeId);
+    List<SchemeDTO> getSchemesByBank(String username);
+    List<SchemeDTO> getSchemes();
 
     List<ApplyDTO> getApplies();
     List<ApplyDTO> getApplyByBank(String username);

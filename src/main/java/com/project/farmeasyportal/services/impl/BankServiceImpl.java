@@ -72,6 +72,24 @@ public class BankServiceImpl implements BankService {
     }
 
     @Override
+    public SchemeDTO updateScheme(SchemeDTO schemeDTO, Integer schemeId) {
+        Scheme scheme = this.schemeDao.findById(schemeId).orElseThrow(() -> new ResourceNotFoundException("Scheme", "id", String.valueOf(schemeId)));
+
+        scheme.setSchemeName(schemeDTO.getSchemeName());
+        scheme.setSchemeCode(schemeDTO.getSchemeCode());
+        scheme.setSchemeDescription(schemeDTO.getSchemeDescription());
+        scheme.setBenefits(schemeDTO.getBenefits());
+        scheme.setEligibility(schemeDTO.getEligibility());
+        scheme.setDocuments(schemeDTO.getDocuments());
+        scheme.setRoi(schemeDTO.getRoi());
+        scheme.setTenure(schemeDTO.getTenure());
+        scheme.setSchemeType(schemeDTO.getSchemeType());
+
+        Scheme update = schemeDao.save(scheme);
+        return this.modelMapper.map(update, SchemeDTO.class);
+    }
+
+    @Override
     public List<BankDTO> getBanks() {
         List<Bank> bankList = this.bankDao.findAll();
         return bankList.stream().map(bank -> this.modelMapper.map(bank, BankDTO.class)).collect(Collectors.toList());
@@ -88,14 +106,26 @@ public class BankServiceImpl implements BankService {
     }
 
     @Override
-    public List<SchemeDTO> getSchemes(String username) {
+    public List<SchemeDTO> getSchemesByBank(String username) {
         List<Scheme> schemes = schemeDao.findAllByBankId(bankDao.findByEmail(username).getId());
-        return schemes.stream().map(scheme -> this.modelMapper.map(scheme, SchemeDTO.class)).collect(Collectors.toList());
+        return schemes.stream().map(scheme -> {
+            SchemeDTO schemeDTO = this.modelMapper.map(scheme, SchemeDTO.class);
+            Bank bank = this.bankDao.findById(scheme.getBankId()).orElseThrow(() -> new ResourceNotFoundException("Bank", "id", scheme.getBankId()));
+            BankDTO bankDTO = this.modelMapper.map(bank, BankDTO.class);
+            schemeDTO.setBankDTO(bankDTO);
+            return schemeDTO;
+        }).collect(Collectors.toList());
     }
 
     @Override
     public List<SchemeDTO> getSchemes() {
-        return this.schemeDao.findAll().stream().map(scheme -> this.modelMapper.map(scheme, SchemeDTO.class)).collect(Collectors.toList());
+        return this.schemeDao.findAll().stream().map(scheme -> {
+            SchemeDTO schemeDTO = this.modelMapper.map(scheme, SchemeDTO.class);
+            Bank bank = this.bankDao.findById(scheme.getBankId()).orElseThrow(() ->  new ResourceNotFoundException("Bank", "id", scheme.getBankId()));
+            BankDTO bankDTO = this.modelMapper.map(bank, BankDTO.class);
+            schemeDTO.setBankDTO(bankDTO);
+            return schemeDTO;
+        }).collect(Collectors.toList());
     }
 
     @Override
