@@ -17,6 +17,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Objects;
 
 @RestController
 @RequiredArgsConstructor
@@ -60,6 +61,29 @@ public class BankController {
         }
         SchemeDTO scheme = this.bankService.addScheme(schemeDTO, bank.getId());
         return new ResponseEntity<>(scheme, HttpStatus.CREATED);
+    }
+
+    @PutMapping("/update-scheme/{schemeId}")
+    public ResponseEntity<?> updateScheme(@PathVariable("schemeId") Integer schemeId, @RequestBody @Valid SchemeDTO schemeDTO, Authentication authentication) {
+        /*String username = authentication.getName();
+        Bank bank = this.bankDao.findByEmail(username);
+
+        if (bank == null) {
+            throw new ResourceNotFoundException("Bank", "email", username);
+        }
+        if (schemeDTO.getBankDTO() == null || !Objects.equals(bank.getId(), schemeDTO.getBankDTO().getId())) {
+            return new ResponseEntity<>(new ApiResponse("Unauthorized bank access !!"), HttpStatus.UNAUTHORIZED);
+        }*/
+
+        SchemeDTO updatedScheme = this.bankService.updateScheme(schemeDTO, schemeId);
+        return new ResponseEntity<>(updatedScheme, HttpStatus.OK);
+    }
+
+    @GetMapping("/scheme")
+    public ResponseEntity<?> getAllSchemesByBank(Authentication authentication) {
+        String username = authentication.getName();
+        List<SchemeDTO> schemes = this.bankService.getSchemesByBank(username);
+        return new ResponseEntity<>(schemes, HttpStatus.OK);
     }
 
 }

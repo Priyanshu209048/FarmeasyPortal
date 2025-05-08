@@ -1,4 +1,4 @@
-CREATE TABLE LoanTable (
+CREATE TABLE LoanForm (
     id                 INT AUTO_INCREMENT PRIMARY KEY,
     name               VARCHAR(255),
     email              VARCHAR(255),

@@ -3,6 +3,7 @@ package com.project.farmeasyportal.services;
 import com.project.farmeasyportal.entities.Farmer;
 import com.project.farmeasyportal.entities.Grievences;
 import com.project.farmeasyportal.entities.LoanForm;
+import com.project.farmeasyportal.payloads.ApplyDTO;
 import com.project.farmeasyportal.payloads.FarmerDTO;
 import com.project.farmeasyportal.payloads.GrievencesDTO;
 import com.project.farmeasyportal.payloads.LoanFormDTO;
@@ -26,6 +27,8 @@ public interface FarmerService {
     Boolean isUserSubmittedForm(String email);
     LoanFormDTO getLoanFormByEmail(String email);
     LoanFormDTO updateLoanForm(LoanFormDTO loanFormDTO, MultipartFile file, String originalFileName, String userId) throws IOException;
+
+    ApplyDTO applyLoanScheme(Integer schemeId, String farmerId, String amount);
 
     void addGrievence(GrievencesDTO grievencesDTO, FarmerDTO farmerDTO);
 

@@ -1,11 +1,13 @@
 package com.project.farmeasyportal.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.project.farmeasyportal.dao.ApplyDao;
 import com.project.farmeasyportal.dao.LoanFormDao;
+import com.project.farmeasyportal.entities.Apply;
+import com.project.farmeasyportal.entities.Farmer;
 import com.project.farmeasyportal.entities.LoanForm;
-import com.project.farmeasyportal.payloads.ApiResponse;
-import com.project.farmeasyportal.payloads.FarmerDTO;
-import com.project.farmeasyportal.payloads.LoanFormDTO;
+import com.project.farmeasyportal.payloads.*;
+import com.project.farmeasyportal.services.BankService;
 import com.project.farmeasyportal.services.FarmerService;
 import jakarta.validation.Valid;
 import lombok.NonNull;
@@ -31,12 +33,17 @@ public class FarmerController {
 
     private final FarmerService farmerService;
     private final LoanFormDao loanFormDao;
+    private final BankService bankService;
+    private final ApplyDao applyDao;
+
     /*private static final Logger log = LoggerFactory.getLogger(FarmerController.class);*/
 
     @Autowired
-    public FarmerController(FarmerService farmerService, LoanFormDao loanFormDao) {
+    public FarmerController(FarmerService farmerService, LoanFormDao loanFormDao, BankService bankService, ApplyDao applyDao) {
         this.farmerService = farmerService;
         this.loanFormDao = loanFormDao;
+        this.bankService = bankService;
+        this.applyDao = applyDao;
     }
 
     private ResponseEntity<?> checkFarmerExists(String farmerID) {
@@ -139,6 +146,28 @@ public class FarmerController {
         LoanForm loanForm = loanFormDao.findById(id).orElse(null);
         assert loanForm != null;
         return new FileSystemResource(new File(System.getProperty("user.dir") + "/src/main/resources/static/documents" + File.separator + loanForm.getPdfName()));
+    }
+
+    @GetMapping("/schemes")
+    public ResponseEntity<?> getAllSchemes() {
+        List<SchemeDTO> schemes = this.bankService.getSchemes();
+        return new ResponseEntity<>(schemes, HttpStatus.OK);
+    }
+
+    @PostMapping("/apply/{schemeId}")
+    public ResponseEntity<?> applyScheme(@PathVariable("schemeId") Integer schemeId, @RequestParam("amount") String amount, Authentication authentication) {
+        try {
+            FarmerDTO farmerDTO = this.farmerService.getFarmerByEmail(authentication.getName());
+
+            long appliedSchemeCount = this.applyDao.countByFarmerId(farmerDTO.getId());
+            if (appliedSchemeCount >= 3)
+                return new ResponseEntity<>("You cannot apply for more than 3 loan schemes.", HttpStatus.FORBIDDEN);
+
+            ApplyDTO applyDTO = this.farmerService.applyLoanScheme(schemeId, farmerDTO.getId(), amount);
+            return new ResponseEntity<>(applyDTO, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>("An error occurred while processing the application.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
 }

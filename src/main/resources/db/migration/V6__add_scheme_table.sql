@@ -9,5 +9,5 @@ CREATE TABLE scheme (
     roi                 VARCHAR(255),
     tenure              VARCHAR(255),
     scheme_type         VARCHAR(255),
-    bank_id             INT NOT NULL
+    bank_id             VARCHAR(255) NOT NULL
 ) ENGINE=InnoDB;

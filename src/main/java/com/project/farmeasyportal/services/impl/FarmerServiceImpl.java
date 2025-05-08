@@ -1,14 +1,9 @@
 package com.project.farmeasyportal.services.impl;
 
-import com.project.farmeasyportal.dao.FarmerDao;
-import com.project.farmeasyportal.dao.GrievencesDao;
-import com.project.farmeasyportal.dao.LoanFormDao;
-import com.project.farmeasyportal.dao.UserDao;
-import com.project.farmeasyportal.entities.Farmer;
-import com.project.farmeasyportal.entities.Grievences;
-import com.project.farmeasyportal.entities.LoanForm;
-import com.project.farmeasyportal.entities.User;
+import com.project.farmeasyportal.dao.*;
+import com.project.farmeasyportal.entities.*;
 import com.project.farmeasyportal.exceptions.ResourceNotFoundException;
+import com.project.farmeasyportal.payloads.ApplyDTO;
 import com.project.farmeasyportal.payloads.FarmerDTO;
 import com.project.farmeasyportal.payloads.GrievencesDTO;
 import com.project.farmeasyportal.payloads.LoanFormDTO;
@@ -40,6 +35,9 @@ public class FarmerServiceImpl implements FarmerService {
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final ModelMapper modelMapper;
     private final GrievencesDao grievencesDao;
+    private final ApplyDao applyDao;
+    private final BankDao bankDao;
+    private final SchemeDao schemeDao;
 
     @Override
     public FarmerDTO saveFarmer(FarmerDTO farmerDTO) {
@@ -184,6 +182,23 @@ public class FarmerServiceImpl implements FarmerService {
         loanFormDao.save(loanForm);
 
         return modelMapper.map(loanForm, LoanFormDTO.class);
+    }
+
+    @Override
+    public ApplyDTO applyLoanScheme(Integer schemeId, String farmerId, String amount) {
+        Scheme scheme = this.schemeDao.findById(schemeId).orElseThrow(() -> new ResourceNotFoundException("Scheme ", "id", String.valueOf(schemeId)));
+
+        Apply apply = new Apply();
+        apply.setFarmerId(farmerId);
+        apply.setSchemeId(String.valueOf(schemeId));
+        apply.setBankId(scheme.getBankId());
+        apply.setDate(LocalDate.now());
+        apply.setAmount(amount);
+        apply.setReview("-");
+        apply.setStatusDate("-");
+        apply.setStatus("Pending");
+        Apply save = this.applyDao.save(apply);
+        return this.modelMapper.map(save, ApplyDTO.class);
     }
 
     @Override
