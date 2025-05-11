@@ -5,9 +5,7 @@ import com.project.farmeasyportal.dao.GrievencesDao;
 import com.project.farmeasyportal.entities.Bank;
 import com.project.farmeasyportal.entities.Scheme;
 import com.project.farmeasyportal.exceptions.ResourceNotFoundException;
-import com.project.farmeasyportal.payloads.ApiResponse;
-import com.project.farmeasyportal.payloads.BankDTO;
-import com.project.farmeasyportal.payloads.SchemeDTO;
+import com.project.farmeasyportal.payloads.*;
 import com.project.farmeasyportal.services.BankService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -84,6 +82,20 @@ public class BankController {
         String username = authentication.getName();
         List<SchemeDTO> schemes = this.bankService.getSchemesByBank(username);
         return new ResponseEntity<>(schemes, HttpStatus.OK);
+    }
+
+    @GetMapping("/apply-status-farmer")
+    public ResponseEntity<?> getAllApplyStatusFarmer(Authentication authentication) {
+        String username = authentication.getName();
+        BankDTO bankDTO = this.bankService.getBankByEmail(username);
+        List<ApplyDTO> applyByBank = this.bankService.getApplyByBank(bankDTO.getId());
+        return new ResponseEntity<>(applyByBank, HttpStatus.OK);
+    }
+
+    @PutMapping("/update-apply-status/{applyId}")
+    public ResponseEntity<?> updateApplyStatus(@PathVariable Integer applyId, @RequestBody @Valid ApplyUpdateDTO applyUpdateDTO) {
+        this.bankService.updateApply(applyId, applyUpdateDTO);
+        return new ResponseEntity<>("Apply status updated successfully !!", HttpStatus.OK);
     }
 
 }

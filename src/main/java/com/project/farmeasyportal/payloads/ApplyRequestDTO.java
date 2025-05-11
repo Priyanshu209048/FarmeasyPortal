@@ -1,7 +1,5 @@
 package com.project.farmeasyportal.payloads;
 
-import java.time.LocalDate;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Column;
 import jakarta.validation.constraints.Email;
@@ -16,21 +14,8 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ApplyDTO {
+public class ApplyRequestDTO {
 
-    private int id;
-    private String farmerId;
-    private String schemeId;
-    private String bankId;
-    private LocalDate date;
-    private String statusDate;
     private String amount;
-    private String status;
-    private String review;
-
-    // Embedded related objects
-    private FarmerDTO farmerDTO;
-    private SchemeDTO schemeDTO;
-    private BankDTO bankDTO;
 
 }

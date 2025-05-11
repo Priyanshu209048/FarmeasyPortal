@@ -2,6 +2,7 @@ package com.project.farmeasyportal.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.farmeasyportal.dao.ApplyDao;
+import com.project.farmeasyportal.dao.GrievencesDao;
 import com.project.farmeasyportal.dao.LoanFormDao;
 import com.project.farmeasyportal.entities.Apply;
 import com.project.farmeasyportal.entities.Farmer;
@@ -35,15 +36,17 @@ public class FarmerController {
     private final LoanFormDao loanFormDao;
     private final BankService bankService;
     private final ApplyDao applyDao;
+    private final GrievencesDao grievencesDao;
 
     /*private static final Logger log = LoggerFactory.getLogger(FarmerController.class);*/
 
     @Autowired
-    public FarmerController(FarmerService farmerService, LoanFormDao loanFormDao, BankService bankService, ApplyDao applyDao) {
+    public FarmerController(FarmerService farmerService, LoanFormDao loanFormDao, BankService bankService, ApplyDao applyDao, GrievencesDao grievencesDao) {
         this.farmerService = farmerService;
         this.loanFormDao = loanFormDao;
         this.bankService = bankService;
         this.applyDao = applyDao;
+        this.grievencesDao = grievencesDao;
     }
 
     private ResponseEntity<?> checkFarmerExists(String farmerID) {
@@ -155,7 +158,7 @@ public class FarmerController {
     }
 
     @PostMapping("/apply/{schemeId}")
-    public ResponseEntity<?> applyScheme(@PathVariable("schemeId") Integer schemeId, @RequestParam("amount") String amount, Authentication authentication) {
+    public ResponseEntity<?> applyScheme(@PathVariable("schemeId") Integer schemeId, @RequestBody ApplyRequestDTO applyRequestDTO, Authentication authentication) {
         try {
             FarmerDTO farmerDTO = this.farmerService.getFarmerByEmail(authentication.getName());
 
@@ -163,11 +166,28 @@ public class FarmerController {
             if (appliedSchemeCount >= 3)
                 return new ResponseEntity<>("You cannot apply for more than 3 loan schemes.", HttpStatus.FORBIDDEN);
 
-            ApplyDTO applyDTO = this.farmerService.applyLoanScheme(schemeId, farmerDTO.getId(), amount);
+            ApplyDTO applyDTO = this.farmerService.applyLoanScheme(schemeId, farmerDTO.getId(), applyRequestDTO.getAmount());
             return new ResponseEntity<>(applyDTO, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>("An error occurred while processing the application.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    @GetMapping("/apply-status")
+    public ResponseEntity<?> getApplyStatus(Authentication authentication) {
+        String username = authentication.getName();
+        FarmerDTO farmerDTO = this.farmerService.getFarmerByEmail(username);
+        List<ApplyDTO> applyStatus = this.farmerService.getApplyStatus(farmerDTO.getId());
+        return new ResponseEntity<>(applyStatus, HttpStatus.OK);
+    }
+
+    /*@PostMapping("/grievences")
+    public ResponseEntity<?> processGrievences(@RequestBody @Valid GrievencesRequestDTO grievencesRequestDTO, Authentication authentication) {
+        String username = authentication.getName();
+        FarmerDTO farmerDTO = this.farmerService.getFarmerByEmail(username);
+
+        this.farmerService.addGrievence(grievencesRequestDTO, farmerDTO);
+        return new ResponseEntity<>("Your Grievence posted successfully !!", HttpStatus.OK);
+    }*/
 
 }

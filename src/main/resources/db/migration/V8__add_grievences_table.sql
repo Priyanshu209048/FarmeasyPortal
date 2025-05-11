@@ -1,7 +1,7 @@
 CREATE TABLE grievences (
     id                      INT AUTO_INCREMENT PRIMARY KEY,
-    farmer_id               INT NOT NULL,
-    bank_id                 INT NOT NULL,
+    farmer_id               VARCHAR(255) NOT NULL,
+    bank_id                 VARCHAR(255) NOT NULL,
     grievences_date         DATE NOT NULL,
     grievences_type         VARCHAR(255) NOT NULL,
     grievences_description  VARCHAR(500) NOT NULL,
