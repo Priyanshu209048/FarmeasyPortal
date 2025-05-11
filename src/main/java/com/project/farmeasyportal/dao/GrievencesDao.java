@@ -9,5 +9,5 @@ import java.util.List;
 
 @Repository
 public interface GrievencesDao extends JpaRepository<Grievences, Integer> {
-    /*List<Grievences> findAllByBank(Bank bank);*/
+    List<Grievences> findAllByBankId(String bankId);
 }
