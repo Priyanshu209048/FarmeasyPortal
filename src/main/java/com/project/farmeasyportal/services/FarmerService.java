@@ -3,10 +3,7 @@ package com.project.farmeasyportal.services;
 import com.project.farmeasyportal.entities.Farmer;
 import com.project.farmeasyportal.entities.Grievences;
 import com.project.farmeasyportal.entities.LoanForm;
-import com.project.farmeasyportal.payloads.ApplyDTO;
-import com.project.farmeasyportal.payloads.FarmerDTO;
-import com.project.farmeasyportal.payloads.GrievencesDTO;
-import com.project.farmeasyportal.payloads.LoanFormDTO;
+import com.project.farmeasyportal.payloads.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -29,7 +26,8 @@ public interface FarmerService {
     LoanFormDTO updateLoanForm(LoanFormDTO loanFormDTO, MultipartFile file, String originalFileName, String userId) throws IOException;
 
     ApplyDTO applyLoanScheme(Integer schemeId, String farmerId, String amount);
+    List<ApplyDTO> getApplyStatus(String farmerId);
 
-    void addGrievence(GrievencesDTO grievencesDTO, FarmerDTO farmerDTO);
+    void addGrievence(GrievencesRequestDTO grievencesRequestDTO, FarmerDTO farmerDTO);
 
 }

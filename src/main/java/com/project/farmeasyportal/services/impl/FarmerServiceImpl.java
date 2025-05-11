@@ -3,10 +3,7 @@ package com.project.farmeasyportal.services.impl;
 import com.project.farmeasyportal.dao.*;
 import com.project.farmeasyportal.entities.*;
 import com.project.farmeasyportal.exceptions.ResourceNotFoundException;
-import com.project.farmeasyportal.payloads.ApplyDTO;
-import com.project.farmeasyportal.payloads.FarmerDTO;
-import com.project.farmeasyportal.payloads.GrievencesDTO;
-import com.project.farmeasyportal.payloads.LoanFormDTO;
+import com.project.farmeasyportal.payloads.*;
 import com.project.farmeasyportal.services.FarmerService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -202,15 +199,38 @@ public class FarmerServiceImpl implements FarmerService {
     }
 
     @Override
-    public void addGrievence(GrievencesDTO grievencesDTO, FarmerDTO farmerDTO) {
-        Grievences grievence = this.modelMapper.map(grievencesDTO, Grievences.class);
+    public List<ApplyDTO> getApplyStatus(String farmerId) {
+        List<Apply> applyList = this.applyDao.findAllByFarmerId(farmerId);
+        return applyList.stream().map(apply -> {
+            ApplyDTO applyDTO = this.modelMapper.map(apply, ApplyDTO.class);
+            Farmer farmer = this.farmerDao.findById(farmerId).orElseThrow(() ->
+                    new ResourceNotFoundException("Farmer", "id", farmerId));
+            Bank bank = this.bankDao.findById(apply.getBankId()).orElseThrow(() ->
+                    new ResourceNotFoundException("Bank", "id", apply.getBankId()));
+            Scheme scheme = this.schemeDao.findById(Integer.valueOf(apply.getSchemeId())).orElseThrow(() ->
+                    new ResourceNotFoundException("Scheme", "id", apply.getSchemeId()));
+
+            applyDTO.setFarmerDTO(this.modelMapper.map(farmer, FarmerDTO.class));
+            applyDTO.setBankDTO(this.modelMapper.map(bank, BankDTO.class));
+            applyDTO.setSchemeDTO(this.modelMapper.map(scheme, SchemeDTO.class));
+            return applyDTO;
+        }).collect(Collectors.toList());
+    }
+
+
+    @Override
+    public void addGrievence(GrievencesRequestDTO grievencesRequestDTO, FarmerDTO farmerDTO) {
         Farmer farmer = this.modelMapper.map(farmerDTO, Farmer.class);
 
-        grievence.setFarmerId(farmer.getId());
-        grievence.setGrievencesDate(LocalDate.now());
-        grievence.setGrievencesReview("-");
-        grievence.setGrievencesStatus("-");
+        Grievences grievences = new Grievences();
+        grievences.setFarmerId(farmer.getId());
+        grievences.setBankId(grievencesRequestDTO.getBankId());
+        grievences.setGrievencesType(grievencesRequestDTO.getGrievencesType());
+        grievences.setGrievencesDescription(grievencesRequestDTO.getGrievencesDescription());
+        grievences.setGrievencesDate(LocalDate.now());
+        grievences.setGrievencesReview("-");
+        grievences.setGrievencesStatus("-");
 
-        this.grievencesDao.save(grievence);
+        this.grievencesDao.save(grievences);
     }
 }

@@ -1,10 +1,7 @@
 package com.project.farmeasyportal.services;
 
 import com.project.farmeasyportal.entities.Scheme;
-import com.project.farmeasyportal.payloads.ApplyDTO;
-import com.project.farmeasyportal.payloads.BankDTO;
-import com.project.farmeasyportal.payloads.FarmerDTO;
-import com.project.farmeasyportal.payloads.SchemeDTO;
+import com.project.farmeasyportal.payloads.*;
 
 import java.util.List;
 
@@ -12,6 +9,7 @@ public interface BankService {
 
     BankDTO addBank(BankDTO bankDTO);
     BankDTO getBankById(String bankId);
+    BankDTO getBankByEmail(String email);
     List<BankDTO> getBanks();
     Boolean isBankExistById(String bankId);
     Boolean isBankExistByEmail(String email);
@@ -22,9 +20,8 @@ public interface BankService {
     List<SchemeDTO> getSchemes();
 
     List<ApplyDTO> getApplies();
-    List<ApplyDTO> getApplyByBank(String username);
-    List<ApplyDTO> getApplyByFarmer(FarmerDTO farmerDTO);
-    void updateApply(ApplyDTO applyDTO, String status, String review);
+    List<ApplyDTO> getApplyByBank(String bankId);
+    void updateApply(Integer applyId, ApplyUpdateDTO applyUpdateDTO);
     ApplyDTO getApply(Integer id);
 
 }
