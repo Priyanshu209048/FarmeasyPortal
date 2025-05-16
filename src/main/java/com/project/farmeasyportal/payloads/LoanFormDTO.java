@@ -20,8 +20,11 @@ public class LoanFormDTO {
     private String district;
     private String state;
     private String pinCode;
-    private String idType;
-    private String idNumber;
+    private int aadhaarNumber;
+    private String aadhaarPdfName;
+    private int panNumber;
+    private String panPdfName;
+    private int salary;
 
     private String collateralType;
     private String guarantorName;
@@ -33,6 +36,6 @@ public class LoanFormDTO {
     private String landOwnership;
     private String soilType;
     private String cropType;
-    private String pdfName;
+    private String landDetailsPdf;
 
 }

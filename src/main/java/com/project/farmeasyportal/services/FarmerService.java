@@ -20,10 +20,10 @@ public interface FarmerService {
     Boolean isFarmerExistByEmail(String id);
     Boolean isFarmerExistById(String id);
 
-    void submitForm(LoanFormDTO loanFormDTO, MultipartFile file, String originalFileName, String userId) throws IOException;
+    void submitForm(LoanFormDTO loanFormDTO, MultipartFile aadhaar, MultipartFile pan, MultipartFile landDetails, String userId) throws IOException;
     Boolean isUserSubmittedForm(String email);
     LoanFormDTO getLoanFormByEmail(String email);
-    LoanFormDTO updateLoanForm(LoanFormDTO loanFormDTO, MultipartFile file, String originalFileName, String userId) throws IOException;
+    LoanFormDTO updateLoanForm(LoanFormDTO loanFormDTO, MultipartFile aadhaar, MultipartFile pan, MultipartFile landDetails, String userId) throws IOException;
 
     ApplyDTO applyLoanScheme(Integer schemeId, String farmerId, String amount);
     List<ApplyDTO> getApplyStatus(String farmerId);

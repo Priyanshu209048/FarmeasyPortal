@@ -1,5 +1,6 @@
 package com.project.farmeasyportal.entities;
 
+import com.project.farmeasyportal.enums.Status;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -49,7 +50,8 @@ public class Apply {
     private String amount;
 
     @Column(name = "status", nullable = false)
-    private String status;
+    @Enumerated(EnumType.ORDINAL)
+    private Status status = Status.PENDING;
 
     @Column(name = "review")
     private String review;
