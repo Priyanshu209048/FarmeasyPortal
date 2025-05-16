@@ -1,27 +1,29 @@
 package com.project.farmeasyportal.controllers;
 
+import com.project.farmeasyportal.constants.UsersConstants;
 import com.project.farmeasyportal.dao.BankDao;
 import com.project.farmeasyportal.dao.GrievencesDao;
 import com.project.farmeasyportal.entities.Bank;
-import com.project.farmeasyportal.entities.Scheme;
 import com.project.farmeasyportal.exceptions.ResourceNotFoundException;
 import com.project.farmeasyportal.payloads.*;
 import com.project.farmeasyportal.services.BankService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Objects;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/bank")
 public class BankController {
 
+    private static final Logger log = LoggerFactory.getLogger(BankController.class);
     private final BankService bankService;
     private final BankDao bankDao;
     private final GrievencesDao grievencesDao;
@@ -55,7 +57,7 @@ public class BankController {
         String username = authentication.getName();
         Bank bank = this.bankDao.findByEmail(username);
         if (bank == null) {
-            throw new ResourceNotFoundException("Bank", "email", username);
+            throw new ResourceNotFoundException(UsersConstants.BANK, UsersConstants.EMAIL, username);
         }
         SchemeDTO scheme = this.bankService.addScheme(schemeDTO, bank.getId());
         return new ResponseEntity<>(scheme, HttpStatus.CREATED);
@@ -96,6 +98,15 @@ public class BankController {
     public ResponseEntity<?> updateApplyStatus(@PathVariable Integer applyId, @RequestBody @Valid ApplyUpdateDTO applyUpdateDTO) {
         this.bankService.updateApply(applyId, applyUpdateDTO);
         return new ResponseEntity<>("Apply status updated successfully !!", HttpStatus.OK);
+    }
+
+    @GetMapping("/grievences")
+    public ResponseEntity<?> getGrievences(Authentication authentication) {
+        String name = authentication.getName();
+        log.info("Bank Email: {}", name);
+        BankDTO bank = this.bankService.getBankByEmail(name);
+        List<GrievencesDTO> grievences = this.bankService.getGrievences(bank.getId());
+        return new ResponseEntity<>(grievences, HttpStatus.OK);
     }
 
 }

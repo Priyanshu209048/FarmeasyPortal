@@ -1,6 +1,5 @@
 package com.project.farmeasyportal.services;
 
-import com.project.farmeasyportal.entities.Scheme;
 import com.project.farmeasyportal.payloads.*;
 
 import java.util.List;
@@ -23,5 +22,7 @@ public interface BankService {
     List<ApplyDTO> getApplyByBank(String bankId);
     void updateApply(Integer applyId, ApplyUpdateDTO applyUpdateDTO);
     ApplyDTO getApply(Integer id);
+
+    List<GrievencesDTO> getGrievences(String bankId);
 
 }

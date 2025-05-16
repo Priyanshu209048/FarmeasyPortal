@@ -1,22 +1,21 @@
 package com.project.farmeasyportal.services.impl;
 
+import com.project.farmeasyportal.constants.UsersConstants;
 import com.project.farmeasyportal.dao.*;
 import com.project.farmeasyportal.entities.*;
+import com.project.farmeasyportal.enums.Status;
 import com.project.farmeasyportal.exceptions.ResourceNotFoundException;
 import com.project.farmeasyportal.payloads.*;
 import com.project.farmeasyportal.services.BankService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -47,7 +46,7 @@ public class BankServiceImpl implements BankService {
         User user = new User();
         user.setEmail(bank.getEmail());
         user.setPassword(encodedPassword);
-        user.setRole("ROLE_BANK");
+        user.setRole(UsersConstants.ROLE_BANK);
         userDao.save(user);
         Bank save = this.bankDao.save(bank);
         return this.modelMapper.map(save, BankDTO.class);
@@ -56,7 +55,7 @@ public class BankServiceImpl implements BankService {
     @Override
     public BankDTO getBankById(String bankId) {
         Bank bank = this.bankDao.findById(bankId).orElseThrow(() ->
-                new ResourceNotFoundException("Bank", "id", bankId));
+                new ResourceNotFoundException(UsersConstants.BANK, UsersConstants.ID, bankId));
         return this.modelMapper.map(bank, BankDTO.class);
     }
 
@@ -70,7 +69,7 @@ public class BankServiceImpl implements BankService {
     public SchemeDTO addScheme(SchemeDTO schemeDTO, String bankId) {
         Scheme scheme = modelMapper.map(schemeDTO, Scheme.class);
         Bank bank = this.bankDao.findById(bankId).orElseThrow(() ->
-                new ResourceNotFoundException("Bank", "id", bankId));
+                new ResourceNotFoundException(UsersConstants.BANK, UsersConstants.ID, bankId));
 
         scheme.setBankId(bank.getId());
         Scheme save = schemeDao.save(scheme);
@@ -80,13 +79,16 @@ public class BankServiceImpl implements BankService {
     @Override
     public SchemeDTO updateScheme(SchemeDTO schemeDTO, Integer schemeId) {
         Scheme scheme = this.schemeDao.findById(schemeId).orElseThrow(() ->
-                new ResourceNotFoundException("Scheme", "id", String.valueOf(schemeId)));
+                new ResourceNotFoundException(UsersConstants.SCHEME, UsersConstants.ID, String.valueOf(schemeId)));
 
         scheme.setSchemeName(schemeDTO.getSchemeName());
         scheme.setSchemeCode(schemeDTO.getSchemeCode());
         scheme.setSchemeDescription(schemeDTO.getSchemeDescription());
         scheme.setBenefits(schemeDTO.getBenefits());
         scheme.setEligibility(schemeDTO.getEligibility());
+        scheme.setMin_salary(schemeDTO.getMin_salary());
+        scheme.setMax_salary(schemeDTO.getMax_salary());
+        scheme.setCibil_score(schemeDTO.getCibil_score());
         scheme.setDocuments(schemeDTO.getDocuments());
         scheme.setRoi(schemeDTO.getRoi());
         scheme.setTenure(schemeDTO.getTenure());
@@ -118,7 +120,7 @@ public class BankServiceImpl implements BankService {
         return schemes.stream().map(scheme -> {
             SchemeDTO schemeDTO = this.modelMapper.map(scheme, SchemeDTO.class);
             Bank bank = this.bankDao.findById(scheme.getBankId()).orElseThrow(() ->
-                    new ResourceNotFoundException("Bank", "id", scheme.getBankId()));
+                    new ResourceNotFoundException(UsersConstants.BANK, UsersConstants.ID, scheme.getBankId()));
             BankDTO bankDTO = this.modelMapper.map(bank, BankDTO.class);
             schemeDTO.setBankDTO(bankDTO);
             return schemeDTO;
@@ -130,7 +132,7 @@ public class BankServiceImpl implements BankService {
         return this.schemeDao.findAll().stream().map(scheme -> {
             SchemeDTO schemeDTO = this.modelMapper.map(scheme, SchemeDTO.class);
             Bank bank = this.bankDao.findById(scheme.getBankId()).orElseThrow(() ->
-                    new ResourceNotFoundException("Bank", "id", scheme.getBankId()));
+                    new ResourceNotFoundException(UsersConstants.BANK, UsersConstants.ID, scheme.getBankId()));
             BankDTO bankDTO = this.modelMapper.map(bank, BankDTO.class);
             schemeDTO.setBankDTO(bankDTO);
             return schemeDTO;
@@ -149,11 +151,11 @@ public class BankServiceImpl implements BankService {
         return applyList.stream().map(apply -> {
             ApplyDTO applyDTO = this.modelMapper.map(apply, ApplyDTO.class);
             Farmer farmer = this.farmerDao.findById(apply.getFarmerId()).orElseThrow(() ->
-                    new ResourceNotFoundException("Farmer", "id", apply.getFarmerId()));
+                    new ResourceNotFoundException(UsersConstants.FARMER, UsersConstants.ID, apply.getFarmerId()));
             Bank bank = this.bankDao.findById(bankId).orElseThrow(() ->
-                    new ResourceNotFoundException("Bank", "id", bankId));
+                    new ResourceNotFoundException(UsersConstants.BANK, UsersConstants.ID, bankId));
             Scheme scheme = this.schemeDao.findById(Integer.valueOf(apply.getSchemeId())).orElseThrow(() ->
-                    new ResourceNotFoundException("Scheme", "id", apply.getSchemeId()));
+                    new ResourceNotFoundException(UsersConstants.SCHEME, UsersConstants.ID, apply.getSchemeId()));
 
             applyDTO.setFarmerDTO(this.modelMapper.map(farmer, FarmerDTO.class));
             applyDTO.setBankDTO(this.modelMapper.map(bank, BankDTO.class));
@@ -165,8 +167,11 @@ public class BankServiceImpl implements BankService {
     @Override
     public void updateApply(Integer applyId, ApplyUpdateDTO applyUpdateDTO) {
         Apply apply = this.applyDao.findById(applyId).orElseThrow(() ->
-                new ResourceNotFoundException("Apply", "id", String.valueOf(applyId)));
-        apply.setStatus(applyUpdateDTO.getStatus());
+                new ResourceNotFoundException(UsersConstants.APPLY, UsersConstants.ID, String.valueOf(applyId)));
+
+        Status status = Status.fromCode(applyUpdateDTO.getStatus());
+
+        apply.setStatus(status);
         apply.setReview(applyUpdateDTO.getReview());
         apply.setStatusDate(String.valueOf(LocalDate.now()));
         applyDao.save(apply);
@@ -175,7 +180,23 @@ public class BankServiceImpl implements BankService {
     @Override
     public ApplyDTO getApply(Integer id) {
         Apply apply = applyDao.findById(id).orElseThrow(() ->
-                new ResourceNotFoundException("Apply", "id", String.valueOf(id)));
+                new ResourceNotFoundException(UsersConstants.APPLY, UsersConstants.ID, String.valueOf(id)));
         return this.modelMapper.map(apply, ApplyDTO.class);
+    }
+
+    @Override
+    public List<GrievencesDTO> getGrievences(String bankId) {
+        List<Grievences> grievences = this.grievencesDao.findAllByBankId(bankId);
+        return grievences.stream().map(grievence -> {
+            GrievencesDTO grievencesDTO = this.modelMapper.map(grievence, GrievencesDTO.class);
+            Farmer farmer = this.farmerDao.findById(grievence.getFarmerId()).orElseThrow(() ->
+                    new ResourceNotFoundException(UsersConstants.FARMER, UsersConstants.ID, grievence.getFarmerId()));
+            Bank bank = this.bankDao.findById(grievence.getBankId()).orElseThrow(() ->
+                    new ResourceNotFoundException(UsersConstants.BANK, UsersConstants.ID, grievence.getBankId()));
+            grievencesDTO.setFarmerDTO(this.modelMapper.map(farmer, FarmerDTO.class));
+            grievencesDTO.setBankDTO(this.modelMapper.map(bank, BankDTO.class));
+
+            return grievencesDTO;
+        }).collect(Collectors.toList());
     }
 }

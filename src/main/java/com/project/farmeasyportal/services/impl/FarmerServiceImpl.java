@@ -1,7 +1,10 @@
 package com.project.farmeasyportal.services.impl;
 
+import com.project.farmeasyportal.constants.PdfConstants;
+import com.project.farmeasyportal.constants.UsersConstants;
 import com.project.farmeasyportal.dao.*;
 import com.project.farmeasyportal.entities.*;
+import com.project.farmeasyportal.enums.Status;
 import com.project.farmeasyportal.exceptions.ResourceNotFoundException;
 import com.project.farmeasyportal.payloads.*;
 import com.project.farmeasyportal.services.FarmerService;
@@ -51,7 +54,7 @@ public class FarmerServiceImpl implements FarmerService {
         User user = new User();
         user.setEmail(farmer.getEmail());
         user.setPassword(encodedPassword);
-        user.setRole("ROLE_FARMER");
+        user.setRole(UsersConstants.ROLE_FARMER);
         userDao.save(user);
         Farmer save = farmerDao.save(farmer);
         return this.modelMapper.map(save, FarmerDTO.class);
@@ -59,7 +62,7 @@ public class FarmerServiceImpl implements FarmerService {
 
     @Override
     public FarmerDTO updateFarmer(String id, FarmerDTO farmerDTO) {
-        Farmer farmer = this.farmerDao.findById(id).orElseThrow(() -> new ResourceNotFoundException("Farmer", "id", id));
+        Farmer farmer = this.farmerDao.findById(id).orElseThrow(() -> new ResourceNotFoundException(UsersConstants.FARMER, UsersConstants.ID, id));
 
         farmer.setFirstName(farmerDTO.getFirstName());
         farmer.setLastName(farmerDTO.getLastName());
@@ -71,13 +74,13 @@ public class FarmerServiceImpl implements FarmerService {
 
     @Override
     public FarmerDTO getFarmerByEmail(String email) {
-        Farmer farmer = this.farmerDao.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("Farmer", "email", email));
+        Farmer farmer = this.farmerDao.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException(UsersConstants.FARMER, UsersConstants.EMAIL, email));
         return this.modelMapper.map(farmer, FarmerDTO.class);
     }
 
     @Override
     public FarmerDTO getFarmerById(String id) {
-        Farmer farmer = this.farmerDao.findById(id).orElseThrow(() -> new ResourceNotFoundException("Farmer", "id", id));
+        Farmer farmer = this.farmerDao.findById(id).orElseThrow(() -> new ResourceNotFoundException(UsersConstants.FARMER, UsersConstants.ID, id));
         return this.modelMapper.map(farmer, FarmerDTO.class);
     }
 
@@ -89,9 +92,9 @@ public class FarmerServiceImpl implements FarmerService {
 
     @Override
     public void deleteFarmer(String id) {
-        Farmer farmer = this.farmerDao.findById(id).orElseThrow(() -> new ResourceNotFoundException("Farmer", "id", id));
+        Farmer farmer = this.farmerDao.findById(id).orElseThrow(() -> new ResourceNotFoundException(UsersConstants.FARMER, UsersConstants.ID, id));
         this.userDao.delete(this.userDao.findByEmail(farmer.getEmail())
-                .orElseThrow(() -> new ResourceNotFoundException("User", "email", farmer.getEmail())));
+                .orElseThrow(() -> new ResourceNotFoundException(UsersConstants.USER, UsersConstants.EMAIL, farmer.getEmail())));
         this.farmerDao.delete(farmer);
     }
 
@@ -105,11 +108,35 @@ public class FarmerServiceImpl implements FarmerService {
         return this.farmerDao.existsById(id);
     }
 
+    public String savePdf(MultipartFile landDetails, String landDetailsOriginalFileName, String pdfName, String userId) throws IOException {
+        String storedPdfName;
+        if (!landDetails.isEmpty()) {
+            String timestamp = String.valueOf(System.currentTimeMillis());
+            storedPdfName = pdfName + UsersConstants.DASH + userId + UsersConstants.DASH + timestamp + ".pdf";
+
+            Path directoryPath = Paths.get(uploadDir);
+            if (Files.notExists(directoryPath)) {
+                Files.createDirectories(directoryPath);
+            }
+
+            Path filePath = directoryPath.resolve(storedPdfName);
+            Files.write(filePath, landDetails.getBytes());
+        } else {
+            storedPdfName = landDetailsOriginalFileName;
+        }
+
+        return storedPdfName;
+    }
+
     @Override
-    public void submitForm(LoanFormDTO loanFormDTO, MultipartFile file, String originalFileName, String userId) throws IOException {
+    public void submitForm(LoanFormDTO loanFormDTO, MultipartFile aadhaar, MultipartFile pan, MultipartFile landDetails, String userId) throws IOException {
         LoanForm loanForm = this.modelMapper.map(loanFormDTO, LoanForm.class);
 
-        String storedPdfName;
+        String aadhaarOriginalFilename = aadhaar.getOriginalFilename();
+        String panOriginalFilename = pan.getOriginalFilename();
+        String landDetailsOriginalFilename = landDetails.getOriginalFilename();
+
+        /*String storedPdfName;
 
         if (!file.isEmpty()) {
             String timestamp = String.valueOf(System.currentTimeMillis());
@@ -124,9 +151,15 @@ public class FarmerServiceImpl implements FarmerService {
             Files.write(filePath, file.getBytes());
         } else {
             storedPdfName = originalFileName;
-        }
+        }*/
 
-        loanForm.setPdfName(storedPdfName);
+        String saveAadhaarPdf = savePdf(aadhaar, aadhaarOriginalFilename, PdfConstants.AADHAAR, userId);
+        String savePanPdf = savePdf(pan, panOriginalFilename, PdfConstants.PAN, userId);
+        String landDetailsPdf = savePdf(landDetails, landDetailsOriginalFilename, PdfConstants.LAND_DETAILS, userId);
+
+        loanForm.setAadhaarPdfName(saveAadhaarPdf);
+        loanForm.setPanPdfName(savePanPdf);
+        loanForm.setLandDetailsPdf(landDetailsPdf);
 
         loanFormDao.save(loanForm);
     }
@@ -143,8 +176,8 @@ public class FarmerServiceImpl implements FarmerService {
     }
 
     @Override
-    public LoanFormDTO updateLoanForm(LoanFormDTO loanFormDTO, MultipartFile file, String originalFileName, String userId) throws IOException {
-        LoanForm existingLoanForm = this.loanFormDao.findById(loanFormDTO.getId()).orElseThrow(() -> new ResourceNotFoundException("Loan Form", "id", String.valueOf(loanFormDTO.getId())));
+    public LoanFormDTO updateLoanForm(LoanFormDTO loanFormDTO, MultipartFile aadhaar, MultipartFile pan, MultipartFile landDetails, String userId) throws IOException {
+        LoanForm existingLoanForm = this.loanFormDao.findById(loanFormDTO.getId()).orElseThrow(() -> new ResourceNotFoundException(UsersConstants.LOAN_FORM, UsersConstants.ID, String.valueOf(loanFormDTO.getId())));
         String name = existingLoanForm.getName();
         String email = existingLoanForm.getEmail();
         String contact = existingLoanForm.getContact();
@@ -158,7 +191,11 @@ public class FarmerServiceImpl implements FarmerService {
         loanForm.setContact(contact);
         loanForm.setGender(gender);
 
-        String storedPdfName;
+        String aadhaarOriginalFilename = aadhaar.isEmpty() ? loanFormDTO.getAadhaarPdfName() : aadhaar.getOriginalFilename();
+        String panOriginalFilename = pan.isEmpty() ? loanFormDTO.getPanPdfName() : pan.getOriginalFilename();
+        String landDetailsOriginalFilename = landDetails.isEmpty() ? loanFormDTO.getLandDetailsPdf() : landDetails.getOriginalFilename();
+
+        /*String storedPdfName;
 
         if (!file.isEmpty()) {
             String timestamp = String.valueOf(System.currentTimeMillis());
@@ -175,7 +212,16 @@ public class FarmerServiceImpl implements FarmerService {
             storedPdfName = originalFileName;
         }
 
-        loanForm.setPdfName(storedPdfName);
+        loanForm.setPdfName(storedPdfName);*/
+
+        String saveAadhaarPdf = savePdf(aadhaar, aadhaarOriginalFilename, PdfConstants.AADHAAR, userId);
+        String savePanPdf = savePdf(pan, panOriginalFilename, PdfConstants.PAN, userId);
+        String landDetailsPdf = savePdf(landDetails, landDetailsOriginalFilename, PdfConstants.LAND_DETAILS, userId);
+
+        loanForm.setAadhaarPdfName(saveAadhaarPdf);
+        loanForm.setPanPdfName(savePanPdf);
+        loanForm.setLandDetailsPdf(landDetailsPdf);
+
         loanFormDao.save(loanForm);
 
         return modelMapper.map(loanForm, LoanFormDTO.class);
@@ -183,7 +229,7 @@ public class FarmerServiceImpl implements FarmerService {
 
     @Override
     public ApplyDTO applyLoanScheme(Integer schemeId, String farmerId, String amount) {
-        Scheme scheme = this.schemeDao.findById(schemeId).orElseThrow(() -> new ResourceNotFoundException("Scheme ", "id", String.valueOf(schemeId)));
+        Scheme scheme = this.schemeDao.findById(schemeId).orElseThrow(() -> new ResourceNotFoundException(UsersConstants.SCHEME, UsersConstants.ID, String.valueOf(schemeId)));
 
         Apply apply = new Apply();
         apply.setFarmerId(farmerId);
@@ -191,9 +237,9 @@ public class FarmerServiceImpl implements FarmerService {
         apply.setBankId(scheme.getBankId());
         apply.setDate(LocalDate.now());
         apply.setAmount(amount);
-        apply.setReview("-");
-        apply.setStatusDate("-");
-        apply.setStatus("Pending");
+        apply.setReview(UsersConstants.DASH);
+        apply.setStatusDate(UsersConstants.DASH);
+        apply.setStatus(Status.PENDING);
         Apply save = this.applyDao.save(apply);
         return this.modelMapper.map(save, ApplyDTO.class);
     }
@@ -204,11 +250,13 @@ public class FarmerServiceImpl implements FarmerService {
         return applyList.stream().map(apply -> {
             ApplyDTO applyDTO = this.modelMapper.map(apply, ApplyDTO.class);
             Farmer farmer = this.farmerDao.findById(farmerId).orElseThrow(() ->
-                    new ResourceNotFoundException("Farmer", "id", farmerId));
+                    new ResourceNotFoundException(UsersConstants.FARMER, UsersConstants.ID, farmerId));
+
             Bank bank = this.bankDao.findById(apply.getBankId()).orElseThrow(() ->
-                    new ResourceNotFoundException("Bank", "id", apply.getBankId()));
+                    new ResourceNotFoundException(UsersConstants.BANK, UsersConstants.ID, apply.getBankId()));
+
             Scheme scheme = this.schemeDao.findById(Integer.valueOf(apply.getSchemeId())).orElseThrow(() ->
-                    new ResourceNotFoundException("Scheme", "id", apply.getSchemeId()));
+                    new ResourceNotFoundException(UsersConstants.SCHEME, UsersConstants.ID, apply.getSchemeId()));
 
             applyDTO.setFarmerDTO(this.modelMapper.map(farmer, FarmerDTO.class));
             applyDTO.setBankDTO(this.modelMapper.map(bank, BankDTO.class));
@@ -228,8 +276,8 @@ public class FarmerServiceImpl implements FarmerService {
         grievences.setGrievencesType(grievencesRequestDTO.getGrievencesType());
         grievences.setGrievencesDescription(grievencesRequestDTO.getGrievencesDescription());
         grievences.setGrievencesDate(LocalDate.now());
-        grievences.setGrievencesReview("-");
-        grievences.setGrievencesStatus("-");
+        grievences.setGrievencesReview(UsersConstants.DASH);
+        grievences.setGrievencesStatus(UsersConstants.PENDING);
 
         this.grievencesDao.save(grievences);
     }

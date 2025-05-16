@@ -1,12 +1,14 @@
 package com.project.farmeasyportal.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.project.farmeasyportal.constants.UsersConstants;
 import com.project.farmeasyportal.dao.ApplyDao;
 import com.project.farmeasyportal.dao.GrievencesDao;
 import com.project.farmeasyportal.dao.LoanFormDao;
 import com.project.farmeasyportal.entities.Apply;
 import com.project.farmeasyportal.entities.Farmer;
 import com.project.farmeasyportal.entities.LoanForm;
+import com.project.farmeasyportal.exceptions.ResourceNotFoundException;
 import com.project.farmeasyportal.payloads.*;
 import com.project.farmeasyportal.services.BankService;
 import com.project.farmeasyportal.services.FarmerService;
@@ -99,7 +101,9 @@ public class FarmerController {
 
     @PostMapping(value = "/form", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> loanFormProcess(@RequestPart("loanForm") @Valid String loanFormJson,
-                                             @RequestPart("documents") MultipartFile file,
+                                             @RequestPart("aadhaar") MultipartFile aadhaar,
+                                             @RequestPart("pan") MultipartFile pan,
+                                             @RequestPart("land") MultipartFile landDetails,
                                              Authentication authentication) throws IOException {
 
         ObjectMapper mapper = new ObjectMapper();
@@ -111,15 +115,16 @@ public class FarmerController {
         }
 
         FarmerDTO farmerDTO = this.farmerService.getFarmerByEmail(authentication.getName());
-        String originalFileName = file.getOriginalFilename();
-        this.farmerService.submitForm(loanFormDTO, file, originalFileName, farmerDTO.getId());
+        this.farmerService.submitForm(loanFormDTO, aadhaar, pan, landDetails, farmerDTO.getId());
 
         return new ResponseEntity<>("Loan form submitted successfully.", HttpStatus.OK);
     }
 
     @PutMapping(value = "/updateForm", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> updateLoanFormProcess(@RequestPart("loanFormDTO") @Valid @NonNull String loanFormJson,
-                                                   @RequestPart("documents") MultipartFile file,
+                                                   @RequestPart("aadhaar") MultipartFile aadhaar,
+                                                   @RequestPart("pan") MultipartFile pan,
+                                                   @RequestPart("land") MultipartFile landDetails,
                                                    Authentication authentication) throws IOException {
 
         ObjectMapper objectMapper = new ObjectMapper();
@@ -130,9 +135,7 @@ public class FarmerController {
         }
 
         FarmerDTO farmerDTO = this.farmerService.getFarmerByEmail(authentication.getName());
-        String originalFileName = file.isEmpty() ? loanFormDTO.getPdfName() : file.getOriginalFilename();
-
-        LoanFormDTO updatedForm = this.farmerService.updateLoanForm(loanFormDTO, file, originalFileName, farmerDTO.getId());
+        LoanFormDTO updatedForm = this.farmerService.updateLoanForm(loanFormDTO, aadhaar, pan, landDetails, farmerDTO.getId());
 
         return new ResponseEntity<>(updatedForm, HttpStatus.OK);
     }
@@ -143,13 +146,44 @@ public class FarmerController {
         return new ResponseEntity<>(loanFormDTO, HttpStatus.OK);
     }
 
-    @GetMapping("/download")
+    /*@GetMapping("/download")
     @ResponseBody
     public FileSystemResource download(@Param(value = "id") Integer id) {
         LoanForm loanForm = loanFormDao.findById(id).orElse(null);
         assert loanForm != null;
-        return new FileSystemResource(new File(System.getProperty("user.dir") + "/src/main/resources/static/documents" + File.separator + loanForm.getPdfName()));
+        return new FileSystemResource(new File(System.getProperty("user.dir") + "/src/main/resources/static/documents" + File.separator + loanForm.getLandDetailsPdf()));
+    }*/
+
+    @GetMapping("/download")
+    @ResponseBody
+    public FileSystemResource download(@RequestParam("id") Integer id, @RequestParam("documentType") String documentType) {
+        LoanForm loanForm = loanFormDao.findById(id).orElseThrow(() -> new ResourceNotFoundException(UsersConstants.LOAN_FORM, UsersConstants.ID, id.toString()));
+
+        String pdfFileName = getPdfFileName(documentType, loanForm);
+
+        File file = new File(System.getProperty("user.dir") + "/src/main/resources/static/documents" + File.separator + pdfFileName);
+
+        if (!file.exists()) {
+            throw new ResourceNotFoundException("Document", "name", pdfFileName);
+        }
+
+        return new FileSystemResource(file);
     }
+
+    private static String getPdfFileName(String documentType, LoanForm loanForm) {
+        String pdfFileName = switch (documentType.toLowerCase()) {
+            case "land" -> loanForm.getLandDetailsPdf();
+            case "aadhaar" -> loanForm.getAadhaarPdfName();
+            case "pan" -> loanForm.getPanPdfName();
+            default -> throw new IllegalArgumentException("Invalid document type: " + documentType);
+        };
+
+        if (pdfFileName == null || pdfFileName.isEmpty()) {
+            throw new IllegalArgumentException(documentType + " document not found for this loan form.");
+        }
+        return pdfFileName;
+    }
+
 
     @GetMapping("/schemes")
     public ResponseEntity<?> getAllSchemes() {
@@ -181,13 +215,13 @@ public class FarmerController {
         return new ResponseEntity<>(applyStatus, HttpStatus.OK);
     }
 
-    /*@PostMapping("/grievences")
+    @PostMapping("/grievences")
     public ResponseEntity<?> processGrievences(@RequestBody @Valid GrievencesRequestDTO grievencesRequestDTO, Authentication authentication) {
         String username = authentication.getName();
         FarmerDTO farmerDTO = this.farmerService.getFarmerByEmail(username);
 
         this.farmerService.addGrievence(grievencesRequestDTO, farmerDTO);
         return new ResponseEntity<>("Your Grievence posted successfully !!", HttpStatus.OK);
-    }*/
+    }
 
 }
