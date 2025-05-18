@@ -6,7 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "loanform")
+@Table(name = "loan_form")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -24,11 +24,11 @@ public class LoanForm {
     private String district;
     private String state;
     private String pinCode;
-    private int aadhaarNumber;
+    private long aadhaarNumber;
     private String aadhaarPdfName;
-    private int panNumber;
+    private long panNumber;
     private String panPdfName;
-    private int salary;
+    private long salary;
 
     private String collateralType;
     private String guarantorName;
