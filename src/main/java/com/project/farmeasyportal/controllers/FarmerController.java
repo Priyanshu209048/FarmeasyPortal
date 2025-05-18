@@ -117,7 +117,7 @@ public class FarmerController {
         FarmerDTO farmerDTO = this.farmerService.getFarmerByEmail(authentication.getName());
         this.farmerService.submitForm(loanFormDTO, aadhaar, pan, landDetails, farmerDTO.getId());
 
-        return new ResponseEntity<>("Loan form submitted successfully.", HttpStatus.OK);
+        return new ResponseEntity<>("Loan form submitted successfully.", HttpStatus.CREATED);
     }
 
     @PutMapping(value = "/updateForm", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
