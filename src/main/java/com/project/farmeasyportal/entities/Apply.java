@@ -35,7 +35,7 @@ public class Apply {
     private String farmerId;
 
     @Column(name = "scheme_id", nullable = false)
-    private String schemeId;
+    private int schemeId;
 
     @Column(name = "bank_id", nullable = false)
     private String bankId;

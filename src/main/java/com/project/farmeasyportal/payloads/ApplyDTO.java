@@ -20,7 +20,7 @@ public class ApplyDTO {
 
     private int id;
     private String farmerId;
-    private String schemeId;
+    private int schemeId;
     private String bankId;
     private LocalDate date;
     private String statusDate;

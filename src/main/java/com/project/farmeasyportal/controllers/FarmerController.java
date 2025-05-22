@@ -3,18 +3,23 @@ package com.project.farmeasyportal.controllers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.farmeasyportal.constants.UsersConstants;
 import com.project.farmeasyportal.dao.ApplyDao;
+import com.project.farmeasyportal.dao.CibilDao;
 import com.project.farmeasyportal.dao.GrievencesDao;
 import com.project.farmeasyportal.dao.LoanFormDao;
 import com.project.farmeasyportal.entities.Apply;
+import com.project.farmeasyportal.entities.Cibil;
 import com.project.farmeasyportal.entities.Farmer;
 import com.project.farmeasyportal.entities.LoanForm;
 import com.project.farmeasyportal.exceptions.ResourceNotFoundException;
 import com.project.farmeasyportal.payloads.*;
 import com.project.farmeasyportal.services.BankService;
 import com.project.farmeasyportal.services.FarmerService;
+import com.project.farmeasyportal.services.impl.DroolsService;
+import com.project.farmeasyportal.services.impl.EvaluationRequestMapper;
 import jakarta.validation.Valid;
 import lombok.NonNull;
 import lombok.extern.log4j.Log4j2;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.data.repository.query.Param;
@@ -38,16 +43,22 @@ public class FarmerController {
     private final LoanFormDao loanFormDao;
     private final BankService bankService;
     private final ApplyDao applyDao;
+    private final ModelMapper modelMapper;
+    private final DroolsService droolsService;
+    private final CibilDao cibilDao;
     private final GrievencesDao grievencesDao;
 
     /*private static final Logger log = LoggerFactory.getLogger(FarmerController.class);*/
 
     @Autowired
-    public FarmerController(FarmerService farmerService, LoanFormDao loanFormDao, BankService bankService, ApplyDao applyDao, GrievencesDao grievencesDao) {
+    public FarmerController(FarmerService farmerService, LoanFormDao loanFormDao, BankService bankService, ApplyDao applyDao, ModelMapper modelMapper, DroolsService droolsService, CibilDao cibilDao, GrievencesDao grievencesDao) {
         this.farmerService = farmerService;
         this.loanFormDao = loanFormDao;
         this.bankService = bankService;
         this.applyDao = applyDao;
+        this.modelMapper = modelMapper;
+        this.droolsService = droolsService;
+        this.cibilDao = cibilDao;
         this.grievencesDao = grievencesDao;
     }
 
@@ -200,8 +211,14 @@ public class FarmerController {
             if (appliedSchemeCount >= 3)
                 return new ResponseEntity<>("You cannot apply for more than 3 loan schemes.", HttpStatus.FORBIDDEN);
 
+            LoanForm loanForm = this.loanFormDao.findByEmail(farmerDTO.getEmail());
             ApplyDTO applyDTO = this.farmerService.applyLoanScheme(schemeId, farmerDTO.getId(), applyRequestDTO.getAmount());
-            return new ResponseEntity<>(applyDTO, HttpStatus.OK);
+            Cibil cibil = this.cibilDao.findByUserId(farmerDTO.getId());
+
+            EvaluationRequest request = EvaluationRequestMapper.fromEntities(cibil, loanForm, this.modelMapper.map(applyDTO, Apply.class));
+            boolean approved = droolsService.executeRules(farmerDTO.getId(), request.getSchemeId(), request.getBankId());
+
+            return new ResponseEntity<>(approved ? "Loan Approved" : "Loan Rejected", HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>("An error occurred while processing the application.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
