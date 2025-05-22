@@ -155,7 +155,7 @@ public class BankServiceImpl implements BankService {
             Bank bank = this.bankDao.findById(bankId).orElseThrow(() ->
                     new ResourceNotFoundException(UsersConstants.BANK, UsersConstants.ID, bankId));
             Scheme scheme = this.schemeDao.findById(Integer.valueOf(apply.getSchemeId())).orElseThrow(() ->
-                    new ResourceNotFoundException(UsersConstants.SCHEME, UsersConstants.ID, apply.getSchemeId()));
+                    new ResourceNotFoundException(UsersConstants.SCHEME, UsersConstants.ID, String.valueOf(apply.getSchemeId())));
 
             applyDTO.setFarmerDTO(this.modelMapper.map(farmer, FarmerDTO.class));
             applyDTO.setBankDTO(this.modelMapper.map(bank, BankDTO.class));

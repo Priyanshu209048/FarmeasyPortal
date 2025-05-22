@@ -8,11 +8,13 @@ import java.util.List;
 
 @Repository
 public interface ApplyDao extends JpaRepository<Apply, Integer> {
-    Apply findBySchemeId(String scheme);
+    Apply findBySchemeId(int scheme);
     Apply findByFarmerId(String farmer);
     Apply findByBankId(String bank);
-    List<Apply> findAllBySchemeId(String scheme);
+    List<Apply> findAllBySchemeId(int scheme);
     List<Apply> findAllByFarmerId(String farmer);
     List<Apply> findAllByBankId(String bank);
     long countByFarmerId(String farmer);
+
+    Apply findByFarmerIdAndSchemeIdAndBankId(String farmerId, int schemeId, String bankId);
 }

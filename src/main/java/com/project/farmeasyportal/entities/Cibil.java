@@ -20,6 +20,6 @@ public class Cibil {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     private String userId;
-    private String cibil_score;
+    private int cibil_score;
 
 }
