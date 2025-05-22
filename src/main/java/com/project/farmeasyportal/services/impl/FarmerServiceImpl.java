@@ -233,7 +233,7 @@ public class FarmerServiceImpl implements FarmerService {
 
         Apply apply = new Apply();
         apply.setFarmerId(farmerId);
-        apply.setSchemeId(String.valueOf(schemeId));
+        apply.setSchemeId(schemeId);
         apply.setBankId(scheme.getBankId());
         apply.setDate(LocalDate.now());
         apply.setAmount(amount);
@@ -256,7 +256,7 @@ public class FarmerServiceImpl implements FarmerService {
                     new ResourceNotFoundException(UsersConstants.BANK, UsersConstants.ID, apply.getBankId()));
 
             Scheme scheme = this.schemeDao.findById(Integer.valueOf(apply.getSchemeId())).orElseThrow(() ->
-                    new ResourceNotFoundException(UsersConstants.SCHEME, UsersConstants.ID, apply.getSchemeId()));
+                    new ResourceNotFoundException(UsersConstants.SCHEME, UsersConstants.ID, String.valueOf(apply.getSchemeId())));
 
             applyDTO.setFarmerDTO(this.modelMapper.map(farmer, FarmerDTO.class));
             applyDTO.setBankDTO(this.modelMapper.map(bank, BankDTO.class));
