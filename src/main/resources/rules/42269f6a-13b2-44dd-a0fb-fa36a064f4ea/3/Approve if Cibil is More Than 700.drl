@@ -1,0 +1,18 @@
+package rules;
+
+import com.project.farmeasyportal.entities.LoanForm;
+import com.project.farmeasyportal.entities.Apply;
+import com.project.farmeasyportal.enums.Status;
+import com.project.farmeasyportal.entities.EvaluationRequest;
+
+rule "Approve if Cibil is More Than 700"
+salience 5
+when
+    $evaluationRequest : EvaluationRequest(cibilScore > 700)
+    $apply : Apply()
+then
+    if ($apply.getStatus() == null || !$apply.getStatus().equals(Status.REJECTED)) {
+        $apply.setStatus(Status.PENDING);
+    }
+    System.out.println("Rule Matched: cibilScore > 700 -> PENDING");
+end

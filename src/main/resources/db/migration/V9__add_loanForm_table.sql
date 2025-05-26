@@ -4,6 +4,8 @@ CREATE TABLE Loan_Form (
     email              VARCHAR(20),
     contact            VARCHAR(10),
     gender             VARCHAR(10),
+    age                int NOT NULL,
+    private            int NOT NULL,
     address            VARCHAR(500),
     district           VARCHAR(30),
     state              VARCHAR(20),
