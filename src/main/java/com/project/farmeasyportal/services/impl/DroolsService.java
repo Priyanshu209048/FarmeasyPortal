@@ -6,6 +6,7 @@ import com.project.farmeasyportal.entities.Farmer;
 import com.project.farmeasyportal.entities.LoanForm;
 import com.project.farmeasyportal.entities.SchemeRule;
 import com.project.farmeasyportal.enums.Status;
+import com.project.farmeasyportal.entities.EvaluationRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.kie.api.KieServices;
@@ -20,6 +21,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.LocalDate;
 
 @Service
 @Log4j2
@@ -55,29 +57,36 @@ public class DroolsService {
         kieServices.newKieContainer(kieModule.getReleaseId());
     }
 
-    public boolean executeRules(String farmerId, int schemeId, String bankId) {
+    public boolean executeRules(EvaluationRequest evaluationRequest, String farmerId) {
         Farmer farmer = this.farmerDao.findById(farmerId).orElseThrow(() -> new RuntimeException("Farmer Not Found"));
         LoanForm loanForm = loanFormRepository.findByEmail(farmer.getEmail());
 
-        Apply apply = applyRepository.findByFarmerIdAndSchemeIdAndBankId(farmerId, schemeId, bankId);
+        Apply apply = applyRepository.findByFarmerIdAndSchemeIdAndBankId(farmerId, evaluationRequest.getSchemeId(), evaluationRequest.getBankId());
 
         if (apply == null) {
             throw new RuntimeException("No Apply Record Found for this Farmer, Scheme, and Bank");
         }
 
-        KieSession kieSession = reloadKieBase(bankId, schemeId);
-        kieSession.insert(loanForm);
+        KieSession kieSession = reloadKieBase(evaluationRequest.getBankId(), evaluationRequest.getSchemeId());
+        /*kieSession.insert(loanForm);*/
         kieSession.insert(apply);
+        kieSession.insert(evaluationRequest);
+        log.info("EvaluationRequest: {}", evaluationRequest);
         int firedRules = kieSession.fireAllRules();
+        log.info("Rules loaded for bankId={}, schemeId={}", evaluationRequest.getBankId(), evaluationRequest.getSchemeId());
+        log.info("Total rules: {}", kieSession.getKieBase().getKiePackages().size());
+
         kieSession.dispose();
 
         if (firedRules == 0 || apply.getStatus() == Status.REJECTED || apply.getStatus() == null) {
             apply.setStatus(Status.REJECTED);
+            apply.setReview("Your form is rejected because your form didn't met the criteria");
+            apply.setStatusDate(String.valueOf(LocalDate.now()));
         }
         applyRepository.save(apply);
 
         log.info("Total Rules Fired: {}", firedRules);
-        return apply.getStatus() == Status.APPROVED;
+        return apply.getStatus() == Status.PENDING;
     }
 
     private long getTotalRules(String bankId, Integer schemeId){
@@ -104,7 +113,7 @@ public class DroolsService {
     }
 
     private String generateDrlRule(SchemeRule rule) {
-        String formattedValue = rule.getValue();
+        int formattedValue = Integer.parseInt(rule.getValue());
 
         boolean isRejectionRule = rule.getRuleName().toLowerCase().contains("reject");
 
@@ -117,14 +126,15 @@ public class DroolsService {
                 """
                 package rules;
         
-                import com.project.rules.entities.LoanForm;
-                import com.project.rules.entities.Apply;
-                import com.project.rules.enums.Status;
+                import com.project.farmeasyportal.entities.LoanForm;
+                import com.project.farmeasyportal.entities.Apply;
+                import com.project.farmeasyportal.enums.Status;
+                import com.project.farmeasyportal.entities.EvaluationRequest;
         
                 rule "%s"
                 salience %d
                 when
-                    $loanForm : LoanForm(%s %s %s)
+                    $evaluationRequest : EvaluationRequest(%s %s %s)
                     $apply : Apply()
                 then
                     %s
@@ -137,7 +147,7 @@ public class DroolsService {
         );
     }
 
-    private static String getString(SchemeRule rule, boolean isRejectionRule, String formattedValue) {
+    private static String getString(SchemeRule rule, boolean isRejectionRule, int formattedValue) {
         String thenPart;
         if (isRejectionRule) {
             thenPart = String.format("$apply.setStatus(Status.REJECTED);\n    System.out.println(\"Rule Matched: %s %s %s -> Rejected\");",
@@ -145,8 +155,8 @@ public class DroolsService {
         } else {
             thenPart = String.format(
                     "if ($apply.getStatus() == null || !$apply.getStatus().equals(Status.REJECTED)) {\n" +
-                            "    $apply.setStatus(Status.APPROVED);\n" +
-                            "}\n    System.out.println(\"Rule Matched: %s %s %s -> Approved\");",
+                            "    $apply.setStatus(Status.PENDING);\n" +
+                            "}\n    System.out.println(\"Rule Matched: %s %s %s -> PENDING\");",
                     rule.getField(), rule.getOperator(), formattedValue);
         }
         return thenPart;
@@ -161,8 +171,8 @@ public class DroolsService {
                     .filter(Files::isRegularFile)
                     .forEach(path -> {
                         try {
-                            String fileName = path.getFileName().toString();
-                            String relativePath = "rules/" + bankId + "/" + schemeId + "/" + fileName;
+                            String fileName = path.getFileName().toString()+".drl";
+                            String relativePath = "src/main/resources/rules/" + bankId + "/" + schemeId + "/" + fileName;
                             kieFileSystem.write(relativePath, new String(Files.readAllBytes(path)));
                         } catch (IOException e) {
                             throw new RuntimeException(e);

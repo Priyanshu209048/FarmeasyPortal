@@ -16,6 +16,8 @@ public class LoanFormDTO {
     private String email;
     private String contact;
     private String gender;
+    private int age;
+    private int cibil;
     private String address;
     private String district;
     private String state;
