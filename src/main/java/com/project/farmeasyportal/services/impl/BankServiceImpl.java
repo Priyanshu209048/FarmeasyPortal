@@ -8,17 +8,20 @@ import com.project.farmeasyportal.exceptions.ResourceNotFoundException;
 import com.project.farmeasyportal.payloads.*;
 import com.project.farmeasyportal.services.BankService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.modelmapper.ModelMapper;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Log4j2
 public class BankServiceImpl implements BankService {
 
     private final SchemeDao schemeDao;
@@ -147,16 +150,18 @@ public class BankServiceImpl implements BankService {
 
     @Override
     public List<ApplyDTO> getApplyByBank(String bankId) {
-        List<Apply> applyList = this.applyDao.findAllByBankId(bankId);
+        List<Status> excludedStatuses = List.of(Status.DEACTIVATED);
+        List<Apply> applyList = this.applyDao.findAllByBankIdAndStatusNotIn(bankId, excludedStatuses);
         return applyList.stream().map(apply -> {
             ApplyDTO applyDTO = this.modelMapper.map(apply, ApplyDTO.class);
             Farmer farmer = this.farmerDao.findById(apply.getFarmerId()).orElseThrow(() ->
                     new ResourceNotFoundException(UsersConstants.FARMER, UsersConstants.ID, apply.getFarmerId()));
             Bank bank = this.bankDao.findById(bankId).orElseThrow(() ->
                     new ResourceNotFoundException(UsersConstants.BANK, UsersConstants.ID, bankId));
-            Scheme scheme = this.schemeDao.findById(Integer.valueOf(apply.getSchemeId())).orElseThrow(() ->
+            Scheme scheme = this.schemeDao.findById(apply.getSchemeId()).orElseThrow(() ->
                     new ResourceNotFoundException(UsersConstants.SCHEME, UsersConstants.ID, String.valueOf(apply.getSchemeId())));
 
+            applyDTO.setStatus(String.valueOf(apply.getStatus()));
             applyDTO.setFarmerDTO(this.modelMapper.map(farmer, FarmerDTO.class));
             applyDTO.setBankDTO(this.modelMapper.map(bank, BankDTO.class));
             applyDTO.setSchemeDTO(this.modelMapper.map(scheme, SchemeDTO.class));
@@ -175,6 +180,17 @@ public class BankServiceImpl implements BankService {
         apply.setReview(applyUpdateDTO.getReview());
         apply.setStatusDate(String.valueOf(LocalDate.now()));
         applyDao.save(apply);
+
+        if (status == Status.APPROVED) {
+            List<Apply> pendingApplies = applyDao.findAllByFarmerIdAndStatus(apply.getFarmerId(), Status.PENDING);
+
+            pendingApplies.forEach(apply1 -> {
+                apply1.setStatus(Status.DEACTIVATED);
+                apply1.setStatusDate(String.valueOf(LocalDate.now()));
+                apply1.setReview("Your other loan has already been approved");
+                applyDao.save(apply1);
+            });
+        }
     }
 
     @Override
