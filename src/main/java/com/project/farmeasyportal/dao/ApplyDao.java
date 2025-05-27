@@ -1,6 +1,7 @@
 package com.project.farmeasyportal.dao;
 
 import com.project.farmeasyportal.entities.Apply;
+import com.project.farmeasyportal.enums.Status;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -14,7 +15,11 @@ public interface ApplyDao extends JpaRepository<Apply, Integer> {
     List<Apply> findAllBySchemeId(int scheme);
     List<Apply> findAllByFarmerId(String farmer);
     List<Apply> findAllByBankId(String bank);
+    //List<Apply> findAllByBankIdAndStatusNot(String bankId, Status status);
+    List<Apply> findAllByBankIdAndStatusNotIn(String bankId, List<Status> status);
     long countByFarmerId(String farmer);
+
+    List<Apply> findAllByFarmerIdAndStatus(String farmerId, Status status);
 
     Apply findByFarmerIdAndSchemeIdAndBankId(String farmerId, int schemeId, String bankId);
 }
