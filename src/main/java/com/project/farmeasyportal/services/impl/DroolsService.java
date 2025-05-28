@@ -1,12 +1,10 @@
 package com.project.farmeasyportal.services.impl;
 
+import com.project.farmeasyportal.constants.UsersConstants;
 import com.project.farmeasyportal.dao.*;
-import com.project.farmeasyportal.entities.Apply;
-import com.project.farmeasyportal.entities.Farmer;
-import com.project.farmeasyportal.entities.LoanForm;
-import com.project.farmeasyportal.entities.SchemeRule;
+import com.project.farmeasyportal.entities.*;
 import com.project.farmeasyportal.enums.Status;
-import com.project.farmeasyportal.entities.EvaluationRequest;
+import com.project.farmeasyportal.exceptions.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.kie.api.KieServices;
@@ -22,6 +20,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Service
 @Log4j2
@@ -32,6 +32,11 @@ public class DroolsService {
     private final LoanFormDao loanFormRepository;
     private final ApplyDao applyRepository;
     private final FarmerDao farmerDao;
+    private final SchemeDao schemeDao;
+    private final BankDao bankDao;
+    private final NotificationDao notificationDao;
+    private final EmailService emailService;
+    private final NotificationService notificationService;
 
     private final KieServices kieServices = KieServices.Factory.get();
 
@@ -83,7 +88,14 @@ public class DroolsService {
             apply.setReview("Your form is rejected because your form didn't met the criteria");
             apply.setStatusDate(String.valueOf(LocalDate.now()));
         }
+
+        Status oldStatus = apply.getStatus();
         applyRepository.save(apply);
+        /*if (!oldStatus.equals(apply.getStatus())) {
+            sendNotificationIfStatusChanged(apply);
+        }*/
+
+        sendNotificationIfStatusChanged(apply);
 
         log.info("Total Rules Fired: {}", firedRules);
         return apply.getStatus() == Status.PENDING;
@@ -162,7 +174,6 @@ public class DroolsService {
         return thenPart;
     }
 
-
     private KieSession reloadKieBase(String bankId, int schemeId) {
         KieFileSystem kieFileSystem = kieServices.newKieFileSystem();
 
@@ -186,4 +197,52 @@ public class DroolsService {
         KieModule kieModule = builder.getKieModule();
         return kieServices.newKieContainer(kieModule.getReleaseId()).newKieSession();
     }
+
+    private void sendNotificationIfStatusChanged(Apply apply) {
+        log.info("sendNotificationIfStatusChanged called for apply id: {}", apply.getId());
+        /*Apply existing = applyRepository.findById(apply.getId())
+                .orElseThrow(() -> new RuntimeException("Apply not found"));*/
+
+        Farmer farmer = this.farmerDao.findById(apply.getFarmerId()).orElseThrow(() ->
+                new ResourceNotFoundException(UsersConstants.USER, UsersConstants.ID, apply.getFarmerId()));
+        Scheme scheme = this.schemeDao.findById(apply.getSchemeId()).orElseThrow(() ->
+                new ResourceNotFoundException(UsersConstants.SCHEME, UsersConstants.ID, String.valueOf(apply.getSchemeId())));
+        Bank bank = this.bankDao.findById(apply.getBankId()).orElseThrow(() ->
+                new ResourceNotFoundException(UsersConstants.BANK, UsersConstants.ID, apply.getBankId()));
+
+        /*String title = "Status Update: " + scheme.getSchemeName();
+            String message = String.format(
+                    "Hello %s,\n\nYour application for the scheme \"%s\" via bank \"%s\" has been updated to: %s on %s.",
+                    farmer.getFirstName() + " " + farmer.getLastName(),
+                    scheme.getSchemeName(),
+                    bank.getBankName(),
+                    apply.getStatus(),
+                    LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm"))
+            );
+
+            //Save notification
+            Notification notification = new Notification();
+            notification.setTitle(title);
+            notification.setMessage(message);
+            notification.setTimestamp(LocalDateTime.now());
+            notification.setFarmer(farmer.getId());
+            notificationDao.save(notification);*/
+
+        String shortMsg = "Your application for " + scheme.getSchemeName() + " is now " + apply.getStatus();
+
+        // Detailed message for full view
+        String fullMsg = "Hello " + farmer.getFirstName() + " " + farmer.getLastName() + ",<br><br>"
+                + "Your application for the scheme <strong>" + scheme.getSchemeName() + "</strong> "
+                + "with bank <strong>" + bank.getBankName() + "</strong> has been updated to status: "
+                + "<strong>" + apply.getStatus() + "</strong>.<br><br>"
+                + "Review message: " + apply.getReview();
+
+        // Save in-app notification
+        log.info("Save in-app notification");
+        notificationService.createNotification(farmer, shortMsg, fullMsg);
+
+        //Send email
+        //emailService.sendEmail("Status Update: " + scheme.getSchemeName(), fullMsg, farmer.getEmail());
+    }
+
 }
