@@ -29,6 +29,7 @@ public class BankServiceImpl implements BankService {
     private final ApplyDao applyDao;
     private final UserDao userDao;
     private final FarmerDao farmerDao;
+    private final NotificationService notificationService;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final ModelMapper modelMapper;
     private final GrievencesDao grievencesDao;
@@ -180,6 +181,7 @@ public class BankServiceImpl implements BankService {
         apply.setReview(applyUpdateDTO.getReview());
         apply.setStatusDate(String.valueOf(LocalDate.now()));
         applyDao.save(apply);
+        sendNotificationIfStatusChanged(apply);
 
         if (status == Status.APPROVED) {
             List<Apply> pendingApplies = applyDao.findAllByFarmerIdAndStatus(apply.getFarmerId(), Status.PENDING);
@@ -191,6 +193,33 @@ public class BankServiceImpl implements BankService {
                 applyDao.save(apply1);
             });
         }
+    }
+
+    private void sendNotificationIfStatusChanged(Apply apply) {
+        log.info("sendNotificationIfStatusChanged called for apply id: {} ", apply.getId());
+
+        Farmer farmer = this.farmerDao.findById(apply.getFarmerId()).orElseThrow(() ->
+                new ResourceNotFoundException(UsersConstants.USER, UsersConstants.ID, apply.getFarmerId()));
+        Scheme scheme = this.schemeDao.findById(apply.getSchemeId()).orElseThrow(() ->
+                new ResourceNotFoundException(UsersConstants.SCHEME, UsersConstants.ID, String.valueOf(apply.getSchemeId())));
+        Bank bank = this.bankDao.findById(apply.getBankId()).orElseThrow(() ->
+                new ResourceNotFoundException(UsersConstants.BANK, UsersConstants.ID, apply.getBankId()));
+
+        String shortMsg = "Your application for " + scheme.getSchemeName() + " is now " + apply.getStatus();
+
+        // Detailed message for full view
+        String fullMsg = "Hello " + farmer.getFirstName() + " " + farmer.getLastName() + ",<br><br>"
+                + "Your application for the scheme <strong>" + scheme.getSchemeName() + "</strong> "
+                + "with bank <strong>" + bank.getBankName() + "</strong> has been updated to status: "
+                + "<strong>" + apply.getStatus() + "</strong>.<br><br>"
+                + "Review message: " + apply.getReview();
+
+        // Save in-app notification
+        log.info("Save in-app notification");
+        notificationService.createNotification(farmer, shortMsg, fullMsg);
+
+        //Send email
+        //emailService.sendEmail("Status Update: " + scheme.getSchemeName(), fullMsg, farmer.getEmail());
     }
 
     @Override
