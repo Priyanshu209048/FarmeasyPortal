@@ -1,8 +1,5 @@
 package com.project.farmeasyportal.services;
 
-import com.project.farmeasyportal.entities.Farmer;
-import com.project.farmeasyportal.entities.Grievences;
-import com.project.farmeasyportal.entities.LoanForm;
 import com.project.farmeasyportal.payloads.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -17,7 +14,7 @@ public interface FarmerService {
     FarmerDTO getFarmerById(String id);
     List<FarmerDTO> getAllFarmers();
     void deleteFarmer(String id);
-    Boolean isFarmerExistByEmail(String id);
+    Boolean isFarmerExistByEmail(String email);
     Boolean isFarmerExistById(String id);
 
     void submitForm(LoanFormDTO loanFormDTO, MultipartFile aadhaar, MultipartFile pan, MultipartFile landDetails, String userId) throws IOException;

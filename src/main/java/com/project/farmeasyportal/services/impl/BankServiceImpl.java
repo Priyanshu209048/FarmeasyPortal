@@ -14,7 +14,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -76,14 +75,19 @@ public class BankServiceImpl implements BankService {
                 new ResourceNotFoundException(UsersConstants.BANK, UsersConstants.ID, bankId));
 
         scheme.setBankId(bank.getId());
+
         Scheme save = schemeDao.save(scheme);
-        return this.modelMapper.map(save, SchemeDTO.class);
+        SchemeDTO map = this.modelMapper.map(save, SchemeDTO.class);
+        map.setBankDTO(this.modelMapper.map(bank, BankDTO.class));
+        return map;
     }
 
     @Override
     public SchemeDTO updateScheme(SchemeDTO schemeDTO, Integer schemeId) {
         Scheme scheme = this.schemeDao.findById(schemeId).orElseThrow(() ->
                 new ResourceNotFoundException(UsersConstants.SCHEME, UsersConstants.ID, String.valueOf(schemeId)));
+        Bank bank = this.bankDao.findById(scheme.getBankId()).orElseThrow(() ->
+                new ResourceNotFoundException(UsersConstants.BANK, UsersConstants.ID, scheme.getBankId()));
 
         scheme.setSchemeName(schemeDTO.getSchemeName());
         scheme.setSchemeCode(schemeDTO.getSchemeCode());
@@ -99,7 +103,9 @@ public class BankServiceImpl implements BankService {
         scheme.setSchemeType(schemeDTO.getSchemeType());
 
         Scheme update = schemeDao.save(scheme);
-        return this.modelMapper.map(update, SchemeDTO.class);
+        SchemeDTO map = this.modelMapper.map(update, SchemeDTO.class);
+        map.setBankDTO(this.modelMapper.map(bank, BankDTO.class));
+        return map;
     }
 
     @Override

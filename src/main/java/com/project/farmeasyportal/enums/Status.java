@@ -7,7 +7,10 @@ public enum Status {
     PENDING(0),
     APPROVED(1),
     REJECTED(2),
-    DEACTIVATED(3);
+    DEACTIVATED(3),
+    PAID(4),
+    SUCCESS(5),
+    FAILED(6);
 
     private final int code;
 
