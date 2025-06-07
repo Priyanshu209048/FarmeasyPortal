@@ -229,7 +229,12 @@ public class FarmerServiceImpl implements FarmerService {
 
     @Override
     public ApplyDTO applyLoanScheme(Integer schemeId, String farmerId, String amount) {
-        Scheme scheme = this.schemeDao.findById(schemeId).orElseThrow(() -> new ResourceNotFoundException(UsersConstants.SCHEME, UsersConstants.ID, String.valueOf(schemeId)));
+        Scheme scheme = this.schemeDao.findById(schemeId).orElseThrow(() ->
+                new ResourceNotFoundException(UsersConstants.SCHEME, UsersConstants.ID, String.valueOf(schemeId)));
+        Farmer farmer = this.farmerDao.findById(farmerId).orElseThrow(() ->
+                new ResourceNotFoundException(UsersConstants.FARMER, UsersConstants.ID, farmerId));
+        Bank bank = this.bankDao.findById(scheme.getBankId()).orElseThrow(() ->
+                new ResourceNotFoundException(UsersConstants.BANK, UsersConstants.ID, scheme.getBankId()));
 
         Apply apply = new Apply();
         apply.setFarmerId(farmerId);
@@ -241,7 +246,12 @@ public class FarmerServiceImpl implements FarmerService {
         apply.setStatusDate(UsersConstants.DASH);
         apply.setStatus(Status.PENDING);
         Apply save = this.applyDao.save(apply);
-        return this.modelMapper.map(save, ApplyDTO.class);
+
+        ApplyDTO applyDTO = this.modelMapper.map(save, ApplyDTO.class);
+        applyDTO.setSchemeDTO(this.modelMapper.map(scheme, SchemeDTO.class));
+        applyDTO.setFarmerDTO(this.modelMapper.map(farmer, FarmerDTO.class));
+        applyDTO.setBankDTO(this.modelMapper.map(bank, BankDTO.class));
+        return applyDTO;
     }
 
     @Override
