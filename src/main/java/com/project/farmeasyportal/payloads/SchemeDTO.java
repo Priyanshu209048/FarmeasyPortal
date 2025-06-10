@@ -55,7 +55,6 @@ public class SchemeDTO {
     @NotBlank(message = "Scheme type is required")
     private String schemeType;
 
-    @NotNull(message = "Bank details are required")
     private BankDTO bankDTO;
 
 }
