@@ -1,6 +1,5 @@
 package com.project.farmeasyportal.dao;
 
-import com.project.farmeasyportal.entities.Bank;
 import com.project.farmeasyportal.entities.Scheme;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

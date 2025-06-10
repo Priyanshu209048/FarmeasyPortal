@@ -10,6 +10,8 @@ public class UsersConstants {
     public static String SCHEME = "Scheme";
     public static String APPLY = "Apply";
     public static String GRIEVENCE = "Grievence";
+    public static String LOAN_FORM = "Loan Form";
+    public static String ITEM = "Item";
 
     public static String ROLE_FARMER = "ROLE_FARMER";
     public static String ROLE_BANK = "ROLE_BANK";
@@ -22,7 +24,5 @@ public class UsersConstants {
     public static String EMAIL = "email";
     public static String PASSWORD = "password";
     public static String ID = "id";
-
-    public static String LOAN_FORM = "Loan Form";
 
 }

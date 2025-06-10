@@ -15,7 +15,8 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class ItemBooking {
     @Id
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int id;
 
     private int itemId;
     private String farmerId;

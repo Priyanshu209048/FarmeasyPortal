@@ -10,6 +10,7 @@ import com.project.farmeasyportal.exceptions.ResourceNotFoundException;
 import com.project.farmeasyportal.payloads.*;
 import com.project.farmeasyportal.services.BankService;
 import com.project.farmeasyportal.services.FarmerService;
+import com.project.farmeasyportal.services.MerchantService;
 import com.project.farmeasyportal.services.impl.DroolsService;
 import com.project.farmeasyportal.services.impl.EvaluationRequestMapper;
 import jakarta.validation.Valid;
@@ -41,12 +42,13 @@ public class FarmerController {
     private final ModelMapper modelMapper;
     private final DroolsService droolsService;
     private final EvaluationRequestDao evaluationRequestDao;
+    private final MerchantService merchantService;
     private final GrievencesDao grievencesDao;
 
     /*private static final Logger log = LoggerFactory.getLogger(FarmerController.class);*/
 
     @Autowired
-    public FarmerController(FarmerService farmerService, LoanFormDao loanFormDao, BankService bankService, ApplyDao applyDao, ModelMapper modelMapper, DroolsService droolsService, EvaluationRequestDao evaluationRequestDao, GrievencesDao grievencesDao) {
+    public FarmerController(FarmerService farmerService, LoanFormDao loanFormDao, BankService bankService, ApplyDao applyDao, ModelMapper modelMapper, DroolsService droolsService, EvaluationRequestDao evaluationRequestDao, MerchantService merchantService, GrievencesDao grievencesDao) {
         this.farmerService = farmerService;
         this.loanFormDao = loanFormDao;
         this.bankService = bankService;
@@ -54,6 +56,7 @@ public class FarmerController {
         this.modelMapper = modelMapper;
         this.droolsService = droolsService;
         this.evaluationRequestDao = evaluationRequestDao;
+        this.merchantService = merchantService;
         this.grievencesDao = grievencesDao;
     }
 
@@ -226,6 +229,18 @@ public class FarmerController {
         FarmerDTO farmerDTO = this.farmerService.getFarmerByEmail(username);
         List<ApplyDTO> applyStatus = this.farmerService.getApplyStatus(farmerDTO.getId());
         return new ResponseEntity<>(applyStatus, HttpStatus.OK);
+    }
+
+    @GetMapping("/item/{itemId}")
+    public ResponseEntity<?> getItem(@PathVariable Integer itemId) {
+        ItemDTO item = this.merchantService.getItemById(itemId);
+        return new ResponseEntity<>(item, HttpStatus.OK);
+    }
+
+    @GetMapping("/items")
+    public ResponseEntity<?> getAllItems() {
+        List<ItemDTO> items = this.merchantService.getItems();
+        return new ResponseEntity<>(items, HttpStatus.OK);
     }
 
     @PostMapping("/grievences")

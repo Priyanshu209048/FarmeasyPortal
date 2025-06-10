@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -26,12 +28,11 @@ public class ItemDTO {
     private int totalQuantity;
 
     @DecimalMin(value = "0.1", inclusive = false, message = "Price per day must be greater than 0.1")
-    private double pricePerDay;
+    private BigDecimal pricePerDay;
 
     @NotNull(message = "Category is required")
-    private ItemCategory category;
+    private String category;
 
-    @NotNull(message = "Merchant information is required")
     private MerchantDTO merchantDTO;
 
 }

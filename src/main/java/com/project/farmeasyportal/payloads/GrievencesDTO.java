@@ -21,10 +21,8 @@ public class GrievencesDTO {
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private int id;
 
-    @NotNull(message = "Farmer information is required")
     private FarmerDTO farmerDTO;
 
-    @NotNull(message = "Bank information is required")
     private BankDTO bankDTO;
 
     @NotNull(message = "Date of grievance is required")

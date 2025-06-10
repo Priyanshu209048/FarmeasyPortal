@@ -16,10 +16,8 @@ public class ItemBookingDTO {
     @Null(message = "ID is auto-generated and should not be provided")
     private String id;
 
-    @NotNull(message = "Item details are required")
     private ItemDTO itemDTO;
 
-    @NotNull(message = "Farmer details are required")
     private FarmerDTO farmerDTO;
 
     @NotNull(message = "Start date is required")
