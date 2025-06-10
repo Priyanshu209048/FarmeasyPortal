@@ -69,6 +69,22 @@ public class BankServiceImpl implements BankService {
     }
 
     @Override
+    public List<BankDTO> getBanks() {
+        List<Bank> bankList = this.bankDao.findAll();
+        return bankList.stream().map(bank -> this.modelMapper.map(bank, BankDTO.class)).collect(Collectors.toList());
+    }
+
+    @Override
+    public Boolean isBankExistById(String bankId) {
+        return this.bankDao.existsById(bankId);
+    }
+
+    @Override
+    public Boolean isBankExistByEmail(String email) {
+        return this.bankDao.existsByEmail(email);
+    }
+
+    @Override
     public SchemeDTO addScheme(SchemeDTO schemeDTO, String bankId) {
         Scheme scheme = modelMapper.map(schemeDTO, Scheme.class);
         Bank bank = this.bankDao.findById(bankId).orElseThrow(() ->
@@ -106,22 +122,6 @@ public class BankServiceImpl implements BankService {
         SchemeDTO map = this.modelMapper.map(update, SchemeDTO.class);
         map.setBankDTO(this.modelMapper.map(bank, BankDTO.class));
         return map;
-    }
-
-    @Override
-    public List<BankDTO> getBanks() {
-        List<Bank> bankList = this.bankDao.findAll();
-        return bankList.stream().map(bank -> this.modelMapper.map(bank, BankDTO.class)).collect(Collectors.toList());
-    }
-
-    @Override
-    public Boolean isBankExistById(String bankId) {
-        return this.bankDao.existsById(bankId);
-    }
-
-    @Override
-    public Boolean isBankExistByEmail(String email) {
-        return this.bankDao.existsByEmail(email);
     }
 
     @Override

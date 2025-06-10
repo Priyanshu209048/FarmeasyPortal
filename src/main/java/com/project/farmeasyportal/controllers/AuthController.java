@@ -7,11 +7,11 @@ import com.project.farmeasyportal.payloads.*;
 import com.project.farmeasyportal.dao.UserDao;
 import com.project.farmeasyportal.services.BankService;
 import com.project.farmeasyportal.services.FarmerService;
+import com.project.farmeasyportal.services.MerchantService;
 import com.project.farmeasyportal.services.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -37,6 +37,7 @@ public class AuthController {
     private final UserDao userDao;
     private final FarmerService farmerService;
     private final BankService bankService;
+    private final MerchantService merchantService;
 
     @PostMapping("/login")
     public ResponseEntity<JwtAuthResponse> createToken(@RequestBody JwtAuthRequest request){
@@ -81,16 +82,15 @@ public class AuthController {
         return new ResponseEntity<>(new ApiResponse("Bank registered successfully"), HttpStatus.CREATED);
     }
 
-    /*@PostMapping("/register/government")
-    public ResponseEntity<?> registerGov(@RequestBody @Valid GovernmentDTO governmentDTO) {
-        if (userService.isUserExistByEmail(governmentDTO.getEmail())) {
-            return new ResponseEntity<>(new ApiResponse("User already exists"), HttpStatus.CONFLICT);
+    @PostMapping("/register/merchant")
+    public ResponseEntity<?> registerMerchant(@RequestBody @Valid MerchantDTO merchantDTO) {
+        if (this.merchantService.isMerchantExistByEmail(merchantDTO.getEmail())) {
+            return new ResponseEntity<>(new ApiResponse("Merchant already exists !!"), HttpStatus.CONFLICT);
         }
 
-        governmentService.createGovDetails(user, governmentDTO);
-        return new ResponseEntity<>(new ApiResponse("Government officer registered successfully"), HttpStatus.CREATED);
-    }*/
-
+        MerchantDTO merchant = this.merchantService.saveMerchant(merchantDTO);
+        return new ResponseEntity<>(new ApiResponse("Merchant registered successfully"), HttpStatus.CREATED);
+    }
 
     /*@PostMapping("/register")
     public ResponseEntity<?> createUserWithRole(@RequestBody @Valid UserDTO userDTO, String role) {

@@ -10,7 +10,7 @@ public interface FarmerService {
 
     FarmerDTO saveFarmer(FarmerDTO farmerDTO);
     FarmerDTO updateFarmer(String id, FarmerDTO farmerDTO);
-    FarmerDTO getFarmerByEmail(String id);
+    FarmerDTO getFarmerByEmail(String email);
     FarmerDTO getFarmerById(String id);
     List<FarmerDTO> getAllFarmers();
     void deleteFarmer(String id);

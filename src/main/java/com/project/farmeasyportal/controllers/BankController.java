@@ -28,7 +28,7 @@ public class BankController {
     private final BankDao bankDao;
     private final GrievencesDao grievencesDao;
 
-    @PostMapping("/api/v1/add-bank")
+    @PostMapping("/add-bank")
     public ResponseEntity<?> addBank(@Valid @RequestBody BankDTO bankDTO) {
         if (this.bankService.isBankExistByEmail(bankDTO.getEmail())) {
             return new ResponseEntity<>(new ApiResponse("Bank already exists !!"), HttpStatus.CONFLICT);
@@ -86,8 +86,8 @@ public class BankController {
         return new ResponseEntity<>(schemes, HttpStatus.OK);
     }
 
-    @GetMapping("/apply-status-farmer")
-    public ResponseEntity<?> getAllApplyStatusFarmer(Authentication authentication) {
+    @GetMapping("/apply-status-bank")
+    public ResponseEntity<?> getAllApplyStatusByBank(Authentication authentication) {
         String username = authentication.getName();
         BankDTO bankDTO = this.bankService.getBankByEmail(username);
         List<ApplyDTO> applyByBank = this.bankService.getApplyByBank(bankDTO.getId());

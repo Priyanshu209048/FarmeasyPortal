@@ -111,6 +111,7 @@ public class SecurityConfiguration {
                     request.requestMatchers(HttpMethod.GET).permitAll();
                     request.requestMatchers("/api/v1/bank/**", "/api/rules/create").hasRole("BANK");
                     request.requestMatchers("/api/v1/farmer/**").hasRole("FARMER");
+                    request.requestMatchers("/api/v1/merchant").hasRole("MERCHANT");
                     request.requestMatchers("/**").permitAll();
                     request.requestMatchers(PUBLIC_URLS).permitAll();
                     request.anyRequest().authenticated();
