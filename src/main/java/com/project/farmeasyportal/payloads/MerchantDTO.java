@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class MerchantDTO {
 
-    @Null(message = "ID is auto-generated and should not be provided")
+    @Null(message = "ID is handled in service and should not be provided")
     private String id;
 
     @NotBlank(message = "Name is required")
@@ -26,7 +26,7 @@ public class MerchantDTO {
     private String email;
 
     @NotBlank(message = "Password is required")
-    @Size(min = 6, message = "Password must be at least 6 characters")
+    @Size(min = 5, message = "Password must be at least 5 characters")
     private String password;
 
     @NotBlank(message = "Address is required")

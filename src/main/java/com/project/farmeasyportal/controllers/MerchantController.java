@@ -21,6 +21,18 @@ public class MerchantController {
 
     private final MerchantService merchantService;
 
+    @PutMapping("/update")
+    public ResponseEntity<?> updateMerchant(@Valid @RequestBody MerchantDTO merchantDTO, Authentication authentication) {
+        String username = authentication.getName();
+        MerchantDTO merchant = this.merchantService.getMerchantByEmail(username);
+        if (merchant == null) {
+            return new ResponseEntity<>(new ResourceNotFoundException(UsersConstants.MERCHANT, UsersConstants.EMAIL, username), HttpStatus.NOT_FOUND);
+        }
+
+        MerchantDTO updated = this.merchantService.updateMerchant(merchant.getId(), merchantDTO);
+        return new ResponseEntity<>(updated, HttpStatus.OK);
+    }
+
     @GetMapping("/{merchantId}")
     public ResponseEntity<?> getMerchantById(@PathVariable String merchantId) {
         if (!this.merchantService.isMerchantExistById(merchantId)) {
