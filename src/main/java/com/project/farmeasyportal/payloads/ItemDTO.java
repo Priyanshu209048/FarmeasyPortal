@@ -14,7 +14,7 @@ import java.math.BigDecimal;
 public class ItemDTO {
 
     @Null(message = "ID is auto-generated and should not be provided")
-    private String id;
+    private int id;
 
     @NotBlank(message = "Item name is required")
     @Size(max = 100, message = "Item name must not exceed 100 characters")
