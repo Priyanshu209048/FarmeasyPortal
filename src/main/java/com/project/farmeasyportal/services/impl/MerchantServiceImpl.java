@@ -59,6 +59,7 @@ public class MerchantServiceImpl implements MerchantService {
 
         merchant.setName(merchantDTO.getName());
         merchant.setPhone(merchantDTO.getPhone());
+        merchant.setAddress(merchant.getAddress());
         Merchant update = this.merchantDao.save(merchant);
 
         return this.modelMapper.map(update, MerchantDTO.class);
