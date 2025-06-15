@@ -25,6 +25,8 @@ public interface FarmerService {
     ApplyDTO applyLoanScheme(Integer schemeId, String farmerId, String amount);
     List<ApplyDTO> getApplyStatus(String farmerId);
 
+    ItemBookingDTO itemBooking(ItemBookingDTO itemBookingDTO, String farmerId, int itemId);
+
     void addGrievence(GrievencesRequestDTO grievencesRequestDTO, FarmerDTO farmerDTO);
 
 }

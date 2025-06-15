@@ -3,6 +3,9 @@ package com.project.farmeasyportal.services;
 import com.project.farmeasyportal.payloads.ItemDTO;
 import com.project.farmeasyportal.payloads.MerchantDTO;
 
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 import java.util.List;
 
 public interface MerchantService {
@@ -16,7 +19,7 @@ public interface MerchantService {
     Boolean isMerchantExistByEmail(String email);
     Boolean isMerchantExistById(String id);
 
-    ItemDTO addItem(ItemDTO itemDTO, String merchantId);
+    ItemDTO addItem(ItemDTO itemDTO, MultipartFile imageName, String merchantId) throws IOException;
     ItemDTO updateItem(ItemDTO itemDTO, Integer itemId);
     ItemDTO getItemById(Integer id);
     List<ItemDTO> getItemsByMerchant(String username);

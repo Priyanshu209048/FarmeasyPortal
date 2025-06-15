@@ -33,6 +33,9 @@ public class ItemDTO {
     @NotNull(message = "Category is required")
     private String category;
 
+    @NotNull(message = "Image is required")
+    private String imageName;
+
     private MerchantDTO merchantDTO;
 
 }
