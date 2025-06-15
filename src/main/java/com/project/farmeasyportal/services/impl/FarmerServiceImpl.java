@@ -15,10 +15,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -38,6 +40,9 @@ public class FarmerServiceImpl implements FarmerService {
     private final ApplyDao applyDao;
     private final BankDao bankDao;
     private final SchemeDao schemeDao;
+    private final ItemDao itemDao;
+    private final ItemBookingDao itemBookingDao;
+    private final MerchantDao merchantDao;
 
     @Override
     public FarmerDTO saveFarmer(FarmerDTO farmerDTO) {
@@ -273,6 +278,51 @@ public class FarmerServiceImpl implements FarmerService {
             applyDTO.setSchemeDTO(this.modelMapper.map(scheme, SchemeDTO.class));
             return applyDTO;
         }).collect(Collectors.toList());
+    }
+
+    @Override
+    public ItemBookingDTO itemBooking(ItemBookingDTO itemBookingDTO, String farmerId, int itemId) {
+        ItemBooking itemBooking = this.modelMapper.map(itemBookingDTO, ItemBooking.class);
+        Item item = this.itemDao.findById(itemId).orElseThrow(() ->
+                new ResourceNotFoundException(UsersConstants.ITEM, UsersConstants.ID, String.valueOf(itemId)));
+        Merchant merchant = this.merchantDao.findById(item.getMerchantId()).orElseThrow(() ->
+                new ResourceNotFoundException(UsersConstants.MERCHANT, UsersConstants.ID, item.getMerchantId()));
+        Farmer farmer = this.farmerDao.findById(farmerId).orElseThrow(() ->
+                new ResourceNotFoundException(UsersConstants.FARMER, UsersConstants.ID, farmerId));
+
+        LocalDate startDate = itemBooking.getStartDate();
+        LocalDate endDate = itemBooking.getEndDate();
+
+        if (startDate == null || endDate == null) {
+            throw new IllegalArgumentException("Start date and end date must not be null");
+        }
+
+        long daysBetween = ChronoUnit.DAYS.between(startDate, endDate);
+        if (daysBetween < 1) {
+            throw new IllegalArgumentException("End Date must be after the start date");
+        }
+
+        BigDecimal totalCost = item.getPricePerDay()
+                .multiply(BigDecimal.valueOf(itemBooking.getQuantityRequested()))
+                .multiply(BigDecimal.valueOf(daysBetween));
+
+        itemBooking.setItemId(itemId);
+        itemBooking.setFarmerId(farmerId);
+        itemBooking.setStatus(Status.PENDING);
+        itemBooking.setPaymentStatus(Status.PENDING);
+        itemBooking.setDeliveredStatus(Status.PENDING);
+        itemBooking.setTotalCost(totalCost);
+
+        ItemBooking save = this.itemBookingDao.save(itemBooking);
+        ItemBookingDTO map = this.modelMapper.map(save, ItemBookingDTO.class);
+
+        ItemDTO itemDTO = this.modelMapper.map(item, ItemDTO.class);
+        itemDTO.setMerchantDTO(this.modelMapper.map(merchant, MerchantDTO.class));
+
+        map.setItemDTO(itemDTO);
+        map.setFarmerDTO(this.modelMapper.map(farmer, FarmerDTO.class));
+
+        return map;
     }
 
 

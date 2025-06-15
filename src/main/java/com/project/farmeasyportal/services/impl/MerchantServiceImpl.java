@@ -16,7 +16,14 @@ import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -24,6 +31,8 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class MerchantServiceImpl implements MerchantService {
+
+    public static String uploadDir = System.getProperty("user.dir") + "/src/main/resources/static/images";
 
     private final UserDao userDao;
     private final MerchantDao merchantDao;
@@ -105,14 +114,47 @@ public class MerchantServiceImpl implements MerchantService {
         return this.merchantDao.existsById(id);
     }
 
+    public String saveImage(MultipartFile imageName, String imageOriginalFileName, String pdfName, String userId) throws IOException {
+        String storedImageName = "";
+        if (!imageName.isEmpty()) {
+            String safeOriginalName = Paths.get(imageOriginalFileName).getFileName().toString();
+            String extension = safeOriginalName.contains(".")
+                    ? safeOriginalName.substring(safeOriginalName.lastIndexOf('.'))
+                    : "";
+
+            if (!imageName.getContentType().startsWith("image/")) {
+                throw new IllegalArgumentException("Only image files are allowed");
+            }
+
+            String timestamp = String.valueOf(System.currentTimeMillis());
+            storedImageName = pdfName + UsersConstants.DASH + userId + UsersConstants.DASH + timestamp + extension;
+
+            Path directory = Paths.get(uploadDir);
+            Files.createDirectories(directory);
+
+            Path filePath = directory.resolve(storedImageName);
+            try (InputStream inputStream = imageName.getInputStream()) {
+                Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
+            }
+        } else {
+            storedImageName = imageOriginalFileName;
+        }
+
+        return storedImageName;
+    }
+
     @Override
-    public ItemDTO addItem(ItemDTO itemDTO, String merchantId) {
+    public ItemDTO addItem(ItemDTO itemDTO, MultipartFile imageName, String merchantId) throws IOException {
         Item item = this.modelMapper.map(itemDTO, Item.class);
         Merchant merchant = this.merchantDao.findById(merchantId).orElseThrow(() ->
                 new ResourceNotFoundException(UsersConstants.MERCHANT, UsersConstants.ID, merchantId));
 
+        String imageOriginalFileName = imageName.getOriginalFilename();
+        String saveImage = saveImage(imageName, imageOriginalFileName, UsersConstants.ITEM, merchantId);
+
         item.setMerchantId(merchantId);
         item.setCategory(ItemCategory.valueOf(itemDTO.getCategory().toUpperCase()));
+        item.setImageName(saveImage);
 
         Item save = itemDao.save(item);
 

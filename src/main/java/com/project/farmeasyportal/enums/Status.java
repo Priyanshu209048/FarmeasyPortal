@@ -10,7 +10,9 @@ public enum Status {
     DEACTIVATED(3),
     PAID(4),
     SUCCESS(5),
-    FAILED(6);
+    FAILED(6),
+    COMPLETED(7),
+    DELIVERED(8);
 
     private final int code;
 

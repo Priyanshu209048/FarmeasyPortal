@@ -14,7 +14,7 @@ import java.time.LocalDate;
 public class ItemBookingDTO {
 
     @Null(message = "ID is auto-generated and should not be provided")
-    private String id;
+    private int id;
 
     private ItemDTO itemDTO;
 
@@ -35,12 +35,16 @@ public class ItemBookingDTO {
     @Pattern(regexp = "PENDING|APPROVED|REJECTED|CANCELLED", message = "Status must be one of: PENDING, APPROVED, REJECTED, CANCELLED")
     private String status;
 
-    @NotNull(message = "Total cost is required")
     @DecimalMin(value = "0.0", inclusive = false, message = "Total cost must be greater than zero")
     private BigDecimal totalCost;
 
     @NotBlank(message = "Payment status is required")
     @Pattern(regexp = "PENDING|PAID|FAILED", message = "Payment status must be one of: PENDING, PAID, FAILED")
     private String paymentStatus;
+
+    @NotBlank(message = "Delivered status is required")
+    @Pattern(regexp = "PENDING|DELIVERED|FAILED", message = "Delivered status must be one of: PENDING, DELIVERED, FAILED")
+    private String deliveredStatus;
+
 
 }

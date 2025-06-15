@@ -33,4 +33,8 @@ public class ItemBooking {
     @Column(name = "payment_status", nullable = false)
     @Enumerated(EnumType.ORDINAL)
     private Status paymentStatus = Status.PENDING;
+
+    @Column(name = "delivered_status", nullable = false)
+    @Enumerated(EnumType.ORDINAL)
+    private Status deliveredStatus = Status.PENDING;
 }

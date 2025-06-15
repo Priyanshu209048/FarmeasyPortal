@@ -243,6 +243,15 @@ public class FarmerController {
         return new ResponseEntity<>(items, HttpStatus.OK);
     }
 
+    @PostMapping("/item-booking/{itemId}")
+    public ResponseEntity<?> itemBooking(@PathVariable Integer itemId, @RequestBody ItemBookingDTO itemBookingDTO, Authentication authentication) {
+        String username = authentication.getName();
+        FarmerDTO farmerDTO = this.farmerService.getFarmerByEmail(username);
+        ItemBookingDTO bookingDTO = this.farmerService.itemBooking(itemBookingDTO, farmerDTO.getId(), itemId);
+
+        return new ResponseEntity<>(bookingDTO, HttpStatus.OK);
+    }
+
     @PostMapping("/grievences")
     public ResponseEntity<?> processGrievences(@RequestBody @Valid GrievencesRequestDTO grievencesRequestDTO, Authentication authentication) {
         String username = authentication.getName();

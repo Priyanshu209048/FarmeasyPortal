@@ -12,6 +12,7 @@ public class UsersConstants {
     public static String GRIEVENCE = "Grievence";
     public static String LOAN_FORM = "Loan Form";
     public static String ITEM = "Item";
+    public static String ITEM_BOOKING = "ItemBooking";
 
     public static String ROLE_FARMER = "ROLE_FARMER";
     public static String ROLE_BANK = "ROLE_BANK";

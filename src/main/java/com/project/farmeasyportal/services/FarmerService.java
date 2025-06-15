@@ -1,5 +1,7 @@
 package com.project.farmeasyportal.services;
 
+import com.project.farmeasyportal.entities.Item;
+import com.project.farmeasyportal.entities.ItemBooking;
 import com.project.farmeasyportal.payloads.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -24,6 +26,8 @@ public interface FarmerService {
 
     ApplyDTO applyLoanScheme(Integer schemeId, String farmerId, String amount);
     List<ApplyDTO> getApplyStatus(String farmerId);
+
+    ItemBookingDTO itemBooking(ItemBookingDTO itemBookingDTO, String farmerId, int itemId);
 
     void addGrievence(GrievencesRequestDTO grievencesRequestDTO, FarmerDTO farmerDTO);
 
