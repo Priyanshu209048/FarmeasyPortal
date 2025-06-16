@@ -60,12 +60,6 @@
             <artifactId>lombok</artifactId>
         </dependency>
 
-        <!--<dependency>
-            <groupId>com.razorpay</groupId>
-            <artifactId>razorpay-java</artifactId>
-            <version>1.4.3</version>
-        </dependency>-->
-
         <!-- https://mvnrepository.com/artifact/com.stripe/stripe-java -->
         <dependency>
             <groupId>com.stripe</groupId>

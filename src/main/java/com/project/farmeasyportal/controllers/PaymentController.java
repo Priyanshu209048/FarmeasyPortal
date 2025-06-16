@@ -27,13 +27,6 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class PaymentController {
 
-    /*private RazorpayClient razorpayClient;
-
-    @PostConstruct
-    public void init() throws RazorpayException {
-        this.razorpayClient = new RazorpayClient("rzp_test_unGf0fgN6itTxn", "VqfNjxIbxKO3vRC0oRsAc3xE");
-    }*/
-
     @Value("${stripe.secret.key}")
     private String stripeSecretKey;
 
