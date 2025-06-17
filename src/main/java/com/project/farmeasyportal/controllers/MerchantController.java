@@ -1,6 +1,7 @@
 package com.project.farmeasyportal.controllers;
 
 import com.project.farmeasyportal.constants.UsersConstants;
+import com.project.farmeasyportal.dao.ItemDao;
 import com.project.farmeasyportal.exceptions.ResourceNotFoundException;
 import com.project.farmeasyportal.payloads.ItemDTO;
 import com.project.farmeasyportal.payloads.MerchantDTO;
@@ -25,6 +26,7 @@ import java.util.List;
 public class MerchantController {
 
     private final MerchantService merchantService;
+    private final ItemDao itemDao;
 
     @PutMapping("/update")
     public ResponseEntity<?> updateMerchant(@Valid @RequestBody MerchantDTO merchantDTO, Authentication authentication) {
@@ -51,6 +53,16 @@ public class MerchantController {
     @GetMapping("/")
     public ResponseEntity<?> getAllMerchants() {
         return new ResponseEntity<>(this.merchantService.getAllMerchants(), HttpStatus.OK);
+    }
+
+    @DeleteMapping("/{merchantId}")
+    public ResponseEntity<?> deleteMerchant(@PathVariable String merchantId) {
+        if (!this.merchantService.isMerchantExistById(merchantId)) {
+            return new ResponseEntity<>("Merchant doesn't exists !!", HttpStatus.NOT_FOUND);
+        }
+
+        this.merchantService.deleteMerchant(merchantId);
+        return new ResponseEntity<>("Merchant Deleted Successfully !!", HttpStatus.OK);
     }
 
     @PostMapping("/add-item")
@@ -81,6 +93,16 @@ public class MerchantController {
 
         ItemDTO item = this.merchantService.updateItem(itemDTO, itemId);
         return new ResponseEntity<>(item, HttpStatus.OK);
+    }
+
+    @DeleteMapping("/{itemId}")
+    public ResponseEntity<?> deleteItem(@PathVariable Integer itemId) {
+        if (!this.itemDao.existsById(itemId)) {
+            return new ResponseEntity<>("Item doesn't exists !!", HttpStatus.NOT_FOUND);
+        }
+
+        this.merchantService.deleteItemById(itemId);
+        return new ResponseEntity<>("Item Deleted Successfully !!", HttpStatus.OK);
     }
 
     @GetMapping("/items-merchant")

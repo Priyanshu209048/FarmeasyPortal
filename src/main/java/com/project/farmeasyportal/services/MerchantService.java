@@ -22,6 +22,7 @@ public interface MerchantService {
     ItemDTO addItem(ItemDTO itemDTO, MultipartFile imageName, String merchantId) throws IOException;
     ItemDTO updateItem(ItemDTO itemDTO, Integer itemId);
     ItemDTO getItemById(Integer id);
+    void deleteItemById(Integer id);
     List<ItemDTO> getItemsByMerchant(String username);
     List<ItemDTO> getItems();
     
