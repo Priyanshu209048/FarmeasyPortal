@@ -43,12 +43,9 @@ public class FarmerController {
     private final DroolsService droolsService;
     private final EvaluationRequestDao evaluationRequestDao;
     private final MerchantService merchantService;
-    private final GrievencesDao grievencesDao;
-
-    /*private static final Logger log = LoggerFactory.getLogger(FarmerController.class);*/
 
     @Autowired
-    public FarmerController(FarmerService farmerService, LoanFormDao loanFormDao, BankService bankService, ApplyDao applyDao, ModelMapper modelMapper, DroolsService droolsService, EvaluationRequestDao evaluationRequestDao, MerchantService merchantService, GrievencesDao grievencesDao) {
+    public FarmerController(FarmerService farmerService, LoanFormDao loanFormDao, BankService bankService, ApplyDao applyDao, ModelMapper modelMapper, DroolsService droolsService, EvaluationRequestDao evaluationRequestDao, MerchantService merchantService) {
         this.farmerService = farmerService;
         this.loanFormDao = loanFormDao;
         this.bankService = bankService;
@@ -57,7 +54,6 @@ public class FarmerController {
         this.droolsService = droolsService;
         this.evaluationRequestDao = evaluationRequestDao;
         this.merchantService = merchantService;
-        this.grievencesDao = grievencesDao;
     }
 
     private ResponseEntity<?> checkFarmerExists(String farmerID) {

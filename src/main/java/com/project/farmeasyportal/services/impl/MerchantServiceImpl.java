@@ -201,6 +201,14 @@ public class MerchantServiceImpl implements MerchantService {
     }
 
     @Override
+    public void deleteItemById(Integer id) {
+        Item item = this.itemDao.findById(id).orElseThrow(() ->
+                new ResourceNotFoundException(UsersConstants.ITEM, UsersConstants.ID, String.valueOf(id)));
+
+        this.itemDao.delete(item);
+    }
+
+    @Override
     public List<ItemDTO> getItemsByMerchant(String username) {
         Merchant merchant = this.merchantDao.findByEmail(username).orElseThrow(() ->
                 new ResourceNotFoundException(UsersConstants.MERCHANT, UsersConstants.EMAIL, username));
