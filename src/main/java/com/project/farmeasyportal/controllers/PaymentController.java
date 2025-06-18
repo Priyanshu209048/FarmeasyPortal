@@ -23,17 +23,17 @@ import java.util.Map;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/payments")
+@RequestMapping("/api/v1/payments")
 @RequiredArgsConstructor
 public class PaymentController {
 
-    @Value("${stripe.secret.key}")
+    /*@Value("${stripe.secret.key}")
     private String stripeSecretKey;
 
     @PostConstruct
     public void init() {
         com.stripe.Stripe.apiKey = stripeSecretKey;
-    }
+    }*/
 
     private final ItemBookingDao itemBookingDao;
     private final PaymentDao paymentDao;

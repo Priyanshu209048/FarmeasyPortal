@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.io.IOException;
 
 @RestController
-@RequestMapping("/api/rules")
+@RequestMapping("/api/v1/rules")
 @RequiredArgsConstructor
 @Log4j2
 public class SchemeRuleController {

@@ -8,5 +8,5 @@ CREATE TABLE item_booking (
     status                  INT NOT NULL DEFAULT 0,
     total_cost              DECIMAL(19, 2) NOT NULL,
     payment_status          INT NOT NULL DEFAULT 0,
-    delivered_status    INT NOT NULL DEFAULT 0
+    delivered_status        INT NOT NULL DEFAULT 0
 ) ENGINE=InnoDB;
