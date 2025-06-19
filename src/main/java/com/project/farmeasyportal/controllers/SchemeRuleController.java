@@ -5,7 +5,6 @@ import com.project.farmeasyportal.dao.SchemeRuleDao;
 import com.project.farmeasyportal.dao.UserDao;
 import com.project.farmeasyportal.entities.Bank;
 import com.project.farmeasyportal.entities.SchemeRule;
-import com.project.farmeasyportal.entities.User;
 import com.project.farmeasyportal.services.impl.DroolsService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
