@@ -15,7 +15,7 @@ import java.math.BigDecimal;
 public class SchemeDTO {
 
     @Null(message = "ID is auto-generated and should not be provided")
-    private int id;
+    private Integer id;
 
     @NotBlank(message = "Scheme name is required")
     private String schemeName;

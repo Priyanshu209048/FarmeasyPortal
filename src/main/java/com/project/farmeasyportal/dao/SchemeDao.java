@@ -10,4 +10,6 @@ import java.util.List;
 public interface SchemeDao extends JpaRepository<Scheme, Integer> {
     Scheme findByBankId(String bank);
     List<Scheme> findAllByBankId(String bank);
+
+    long countByBankId(String id);
 }

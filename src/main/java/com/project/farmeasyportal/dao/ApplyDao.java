@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ApplyDao extends JpaRepository<Apply, Integer> {
@@ -22,4 +23,10 @@ public interface ApplyDao extends JpaRepository<Apply, Integer> {
     List<Apply> findAllByFarmerIdAndStatus(String farmerId, Status status);
 
     Apply findByFarmerIdAndSchemeIdAndBankId(String farmerId, int schemeId, String bankId);
+
+    Optional<Apply> findByFarmerIdAndSchemeId(String farmerId, Integer schemeId);
+
+    long countByBankId(String id);
+
+    long countByBankIdAndStatus(String bankId, Status status);
 }

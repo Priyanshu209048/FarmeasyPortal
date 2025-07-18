@@ -29,6 +29,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/farmer")
@@ -201,6 +202,11 @@ public class FarmerController {
         try {
             FarmerDTO farmerDTO = this.farmerService.getFarmerByEmail(authentication.getName());
 
+            Optional<Apply> existing = applyDao.findByFarmerIdAndSchemeId(farmerDTO.getId(), schemeId);
+            if (existing.isPresent()) {
+                return new ResponseEntity<>("You have already applied to this scheme.", HttpStatus.BAD_REQUEST);
+            }
+
             long appliedSchemeCount = this.applyDao.countByFarmerId(farmerDTO.getId());
             if (appliedSchemeCount >= 3)
                 return new ResponseEntity<>("You cannot apply for more than 3 loan schemes.", HttpStatus.FORBIDDEN);
@@ -215,6 +221,7 @@ public class FarmerController {
 
             return new ResponseEntity<>(pending ? "Loan status is Pending" : "Loan is Rejected", HttpStatus.OK);
         } catch (Exception e) {
+            e.printStackTrace();
             return new ResponseEntity<>("An error occurred while processing the application.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
