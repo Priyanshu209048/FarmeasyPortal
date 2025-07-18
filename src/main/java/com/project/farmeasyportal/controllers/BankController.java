@@ -1,9 +1,12 @@
 package com.project.farmeasyportal.controllers;
 
 import com.project.farmeasyportal.constants.UsersConstants;
+import com.project.farmeasyportal.dao.ApplyDao;
 import com.project.farmeasyportal.dao.BankDao;
 import com.project.farmeasyportal.dao.GrievencesDao;
+import com.project.farmeasyportal.dao.SchemeDao;
 import com.project.farmeasyportal.entities.Bank;
+import com.project.farmeasyportal.enums.Status;
 import com.project.farmeasyportal.exceptions.ResourceNotFoundException;
 import com.project.farmeasyportal.payloads.*;
 import com.project.farmeasyportal.services.BankService;
@@ -16,7 +19,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -26,6 +31,8 @@ public class BankController {
     private static final Logger log = LoggerFactory.getLogger(BankController.class);
     private final BankService bankService;
     private final BankDao bankDao;
+    private final SchemeDao schemeDao;
+    private final ApplyDao applyDao;
     private final GrievencesDao grievencesDao;
 
     @PostMapping("/add-bank")
@@ -98,6 +105,25 @@ public class BankController {
     public ResponseEntity<?> updateApplyStatus(@PathVariable Integer applyId, @RequestBody @Valid ApplyUpdateDTO applyUpdateDTO) {
         this.bankService.updateApply(applyId, applyUpdateDTO);
         return new ResponseEntity<>("Apply status updated successfully !!", HttpStatus.OK);
+    }
+
+    @GetMapping("/dashboard-stats")
+    public ResponseEntity<Map<String, Long>> getBankDashboardStats(Authentication authentication) {
+        String bankEmail = authentication.getName();
+        Bank bank = bankDao.findByEmail(bankEmail);
+
+        long totalSchemes = schemeDao.countByBankId(bank.getId());
+        long totalApplications = applyDao.countByBankId(bank.getId());
+        long approved = applyDao.countByBankIdAndStatus(bank.getId(), Status.APPROVED);
+        long pending = applyDao.countByBankIdAndStatus(bank.getId(), Status.PENDING);
+
+        Map<String, Long> stats = new HashMap<>();
+        stats.put("totalSchemes", totalSchemes);
+        stats.put("totalApplications", totalApplications);
+        stats.put("approved", approved);
+        stats.put("pending", pending);
+
+        return ResponseEntity.ok(stats);
     }
 
     @GetMapping("/grievences")

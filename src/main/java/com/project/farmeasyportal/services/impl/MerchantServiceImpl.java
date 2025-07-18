@@ -1,14 +1,12 @@
 package com.project.farmeasyportal.services.impl;
 
 import com.project.farmeasyportal.constants.UsersConstants;
-import com.project.farmeasyportal.dao.ItemDao;
-import com.project.farmeasyportal.dao.MerchantDao;
-import com.project.farmeasyportal.dao.UserDao;
-import com.project.farmeasyportal.entities.Item;
-import com.project.farmeasyportal.entities.Merchant;
-import com.project.farmeasyportal.entities.User;
+import com.project.farmeasyportal.dao.*;
+import com.project.farmeasyportal.entities.*;
 import com.project.farmeasyportal.enums.ItemCategory;
 import com.project.farmeasyportal.exceptions.ResourceNotFoundException;
+import com.project.farmeasyportal.payloads.FarmerDTO;
+import com.project.farmeasyportal.payloads.ItemBookingDTO;
 import com.project.farmeasyportal.payloads.ItemDTO;
 import com.project.farmeasyportal.payloads.MerchantDTO;
 import com.project.farmeasyportal.services.MerchantService;
@@ -26,6 +24,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -38,6 +37,8 @@ public class MerchantServiceImpl implements MerchantService {
     private final UserDao userDao;
     private final MerchantDao merchantDao;
     private final ItemDao itemDao;
+    private final ItemBookingDao itemBookingDao;
+    private final FarmerDao farmerDao;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final ModelMapper modelMapper;
 
@@ -231,5 +232,57 @@ public class MerchantServiceImpl implements MerchantService {
             return itemDTO;
         }).collect(Collectors.toList());
     }
+
+    @Override
+    public List<ItemBookingDTO> getAllOrdersByMerchantId(String merchantId) {
+        List<ItemBooking> bookings = itemBookingDao.findAllByMerchantId(merchantId);
+        List<Item> items = itemDao.findAllByMerchantId(merchantId);
+
+        // Map itemId -> Item for quick lookup
+        Map<Integer, Item> itemMap = items.stream()
+                .collect(Collectors.toMap(Item::getId, item -> item));
+
+        // Assuming you have a method to get farmer details by farmerId (e.g., FarmerDTO getFarmerDTO(String farmerId))
+
+        return bookings.stream()
+                .map(booking -> {
+                    ItemBookingDTO dto = new ItemBookingDTO();
+
+                    // Set basic fields
+                    dto.setId(booking.getId());
+                    dto.setStartDate(booking.getStartDate());
+                    dto.setEndDate(booking.getEndDate());
+                    dto.setQuantityRequested(booking.getQuantityRequested());
+                    dto.setTotalCost(booking.getTotalCost());
+
+                    // Convert enum to String matching your DTO validations
+                    dto.setStatus(booking.getStatus().name());
+                    dto.setPaymentStatus(booking.getPaymentStatus().name());
+                    dto.setDeliveredStatus(booking.getDeliveredStatus().name());
+
+                    // Map Item to ItemDTO
+                    Item item = itemMap.get(booking.getItemId());
+                    if (item != null) {
+                        ItemDTO itemDTO = new ItemDTO();
+                        itemDTO.setId(item.getId());
+                        itemDTO.setName(item.getName());
+                        itemDTO.setDescription(item.getDescription());
+                        itemDTO.setPricePerDay(item.getPricePerDay());
+                        itemDTO.setCategory(item.getCategory().toString());
+                        itemDTO.setImageName(item.getImageName());
+                        itemDTO.setTotalQuantity(item.getTotalQuantity());
+                        MerchantDTO merchantDTO = merchantDao.getMerchantById(item.getMerchantId());
+                        itemDTO.setMerchantDTO(merchantDTO);
+                        dto.setItemDTO(itemDTO);
+                    }
+
+                    Farmer farmer = this.farmerDao.findById(booking.getFarmerId()).orElseThrow(() ->
+                            new ResourceNotFoundException(UsersConstants.FARMER, UsersConstants.ID, booking.getFarmerId()));
+                    dto.setFarmerDTO(this.modelMapper.map(farmer, FarmerDTO.class));
+
+                    return dto;
+                }).collect(Collectors.toList());
+    }
+
 
 }

@@ -231,7 +231,7 @@ public class DroolsService {
         String shortMsg = "Your application for " + scheme.getSchemeName() + " is now " + apply.getStatus();
 
         // Detailed message for full view
-        String fullMsg = "Hello " + farmer.getFirstName() + " " + farmer.getLastName() + ",<br><br>"
+        String fullMsg = "Hello " + farmer.getName() + ",<br><br>"
                 + "Your application for the scheme <strong>" + scheme.getSchemeName() + "</strong> "
                 + "with bank <strong>" + bank.getBankName() + "</strong> has been updated to status: "
                 + "<strong>" + apply.getStatus() + "</strong>.<br><br>"

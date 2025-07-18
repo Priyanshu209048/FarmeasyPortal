@@ -69,8 +69,8 @@ public class FarmerServiceImpl implements FarmerService {
     public FarmerDTO updateFarmer(String id, FarmerDTO farmerDTO) {
         Farmer farmer = this.farmerDao.findById(id).orElseThrow(() -> new ResourceNotFoundException(UsersConstants.FARMER, UsersConstants.ID, id));
 
-        farmer.setFirstName(farmerDTO.getFirstName());
-        farmer.setLastName(farmerDTO.getLastName());
+        farmer.setName(farmerDTO.getName());
+        /*farmer.setLastName(farmerDTO.getLastName());*/
         farmer.setContact(farmerDTO.getContact());
         Farmer update = farmerDao.save(farmer);
 

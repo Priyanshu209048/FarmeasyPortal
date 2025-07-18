@@ -21,11 +21,11 @@ public class FarmerDTO {
 
     @NotBlank(message = "First Name can not be empty !!")
     @Size(min = 2,max = 20,message = "First name must be between 2 - 20 characters")
-    private String firstName;
+    private String name;
 
-    @NotBlank(message = "Last Name can not be empty !!")
+    /*@NotBlank(message = "Last Name can not be empty !!")
     @Size(min = 2,max = 20,message = "Last name must be between 2 - 20 characters")
-    private String lastName;
+    private String lastName;*/
 
     @NotBlank(message = "Contact cannot be null")
     private String contact;
@@ -38,5 +38,8 @@ public class FarmerDTO {
     @NotBlank(message = "Password is mandatory")
     @Size(min = 5, max = 15, message = "Password must contain minimum 5 characters and maximum of 15 characters ")
     private String password;
+
+    @NotBlank(message = "Address is mandatory")
+    private String address;
 
 }

@@ -3,6 +3,7 @@ package com.project.farmeasyportal.controllers;
 import com.project.farmeasyportal.constants.UsersConstants;
 import com.project.farmeasyportal.dao.ItemDao;
 import com.project.farmeasyportal.exceptions.ResourceNotFoundException;
+import com.project.farmeasyportal.payloads.ItemBookingDTO;
 import com.project.farmeasyportal.payloads.ItemDTO;
 import com.project.farmeasyportal.payloads.MerchantDTO;
 import com.project.farmeasyportal.services.MerchantService;
@@ -115,6 +116,19 @@ public class MerchantController {
 
         List<ItemDTO> items = this.merchantService.getItemsByMerchant(username);
         return new ResponseEntity<>(items, HttpStatus.OK);
+    }
+
+    @GetMapping("/orders")
+    public ResponseEntity<List<ItemBookingDTO>> getAllOrdersByMerchant(Authentication authentication) {
+        String username = authentication.getName();
+        MerchantDTO merchant = this.merchantService.getMerchantByEmail(username);
+
+        if (merchant == null) {
+            throw new ResourceNotFoundException(UsersConstants.MERCHANT, UsersConstants.EMAIL, username);
+        }
+
+        List<ItemBookingDTO> orders = this.merchantService.getAllOrdersByMerchantId(merchant.getId());
+        return ResponseEntity.ok(orders);
     }
 
 }

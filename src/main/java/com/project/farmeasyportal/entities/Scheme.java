@@ -35,8 +35,7 @@ public class Scheme {
     private String tenure;
     private String schemeType;
 
-    @Column(name = "bank_id", nullable = false)
-    @NotNull
+    @Column(name = "bank_id")
     private String bankId;
 
     /*@ManyToOne

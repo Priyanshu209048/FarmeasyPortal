@@ -1,5 +1,6 @@
 package com.project.farmeasyportal.services;
 
+import com.project.farmeasyportal.payloads.ItemBookingDTO;
 import com.project.farmeasyportal.payloads.ItemDTO;
 import com.project.farmeasyportal.payloads.MerchantDTO;
 
@@ -25,5 +26,6 @@ public interface MerchantService {
     void deleteItemById(Integer id);
     List<ItemDTO> getItemsByMerchant(String username);
     List<ItemDTO> getItems();
-    
+    List<ItemBookingDTO> getAllOrdersByMerchantId(String merchantId);
+
 }
