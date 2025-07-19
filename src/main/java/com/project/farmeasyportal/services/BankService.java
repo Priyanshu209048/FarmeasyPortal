@@ -17,6 +17,8 @@ public interface BankService {
     SchemeDTO updateScheme(SchemeDTO schemeDTO, Integer schemeId);
     List<SchemeDTO> getSchemesByBank(String username);
     List<SchemeDTO> getSchemes();
+    SchemeDTO getSchemeById(Integer schemeId);
+    void deleteScheme(Integer schemeId);
 
     List<ApplyDTO> getApplies();
     List<ApplyDTO> getApplyByBank(String bankId);

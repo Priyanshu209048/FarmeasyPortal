@@ -109,7 +109,8 @@ public class SecurityConfiguration {
         http.authorizeHttpRequests(request -> {
                     request.requestMatchers("/api/v1/gov/**").hasRole("GOV");
                     request.requestMatchers(HttpMethod.GET).permitAll();
-                    request.requestMatchers("/api/v1/bank/**", "/api/rules/create").hasRole("BANK");
+                    request.requestMatchers("/api/v1/bank/**", "/api/rules/create",
+                            "/api/v1/farmer/getFormDetail", "/api/v1/farmer/download").hasRole("BANK");
                     request.requestMatchers("/api/v1/farmer/**", "/api/v1/payments/**").hasRole("FARMER");
                     request.requestMatchers("/api/v1/merchant").hasRole("MERCHANT");
                     request.requestMatchers("/**").permitAll();

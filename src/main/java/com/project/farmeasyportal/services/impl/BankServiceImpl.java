@@ -150,6 +150,20 @@ public class BankServiceImpl implements BankService {
     }
 
     @Override
+    public SchemeDTO getSchemeById(Integer schemeId) {
+        Scheme scheme = schemeDao.findById(schemeId).orElseThrow(() ->
+                new ResourceNotFoundException(UsersConstants.SCHEME, UsersConstants.ID, String.valueOf(schemeId)));
+        return modelMapper.map(scheme, SchemeDTO.class);
+    }
+
+    @Override
+    public void deleteScheme(Integer schemeId) {
+        Scheme scheme = schemeDao.findById(schemeId).orElseThrow(() ->
+                new ResourceNotFoundException(UsersConstants.SCHEME, UsersConstants.ID, String.valueOf(schemeId)));
+        schemeDao.delete(scheme);
+    }
+
+    @Override
     public List<ApplyDTO> getApplies() {
         return applyDao.findAll().stream().map(apply ->
                 this.modelMapper.map(apply, ApplyDTO.class)).collect(Collectors.toList());

@@ -29,4 +29,6 @@ public interface FarmerService {
 
     void addGrievence(GrievencesRequestDTO grievencesRequestDTO, FarmerDTO farmerDTO);
 
+    SchemeDTO getSchemeById(Integer schemeId);
+
 }

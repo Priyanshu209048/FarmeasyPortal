@@ -10,6 +10,7 @@ import com.project.farmeasyportal.enums.Status;
 import com.project.farmeasyportal.exceptions.ResourceNotFoundException;
 import com.project.farmeasyportal.payloads.*;
 import com.project.farmeasyportal.services.BankService;
+import com.project.farmeasyportal.services.FarmerService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -30,6 +31,7 @@ public class BankController {
 
     private static final Logger log = LoggerFactory.getLogger(BankController.class);
     private final BankService bankService;
+    private final FarmerService farmerService;
     private final BankDao bankDao;
     private final SchemeDao schemeDao;
     private final ApplyDao applyDao;
@@ -86,6 +88,12 @@ public class BankController {
         return new ResponseEntity<>(updatedScheme, HttpStatus.OK);
     }
 
+    @GetMapping("/scheme/{schemeId}")
+    public ResponseEntity<SchemeDTO> getSchemeById(@PathVariable Integer schemeId) {
+        SchemeDTO schemeDTO = bankService.getSchemeById(schemeId);
+        return ResponseEntity.ok(schemeDTO);
+    }
+
     @GetMapping("/scheme")
     public ResponseEntity<?> getAllSchemesByBank(Authentication authentication) {
         String username = authentication.getName();
@@ -99,6 +107,12 @@ public class BankController {
         BankDTO bankDTO = this.bankService.getBankByEmail(username);
         List<ApplyDTO> applyByBank = this.bankService.getApplyByBank(bankDTO.getId());
         return new ResponseEntity<>(applyByBank, HttpStatus.OK);
+    }
+
+    @DeleteMapping("/delete-scheme/{schemeId}")
+    public ResponseEntity<String> deleteScheme(@PathVariable Integer schemeId) {
+        bankService.deleteScheme(schemeId);
+        return new ResponseEntity<>("Scheme deleted successfully.", HttpStatus.OK);
     }
 
     @PutMapping("/update-apply-status/{applyId}")
@@ -125,6 +139,22 @@ public class BankController {
 
         return ResponseEntity.ok(stats);
     }
+
+    @GetMapping("/getFormDetailByFarmerId/{farmerId}")
+    public ResponseEntity<?> getLoanFormDetailByFarmerId(@PathVariable String farmerId) {
+        FarmerDTO farmerDTO = farmerService.getFarmerById(farmerId);
+        if (farmerDTO == null || farmerDTO.getEmail() == null) {
+            return new ResponseEntity<>("Farmer not found with ID: " + farmerId, HttpStatus.NOT_FOUND);
+        }
+
+        LoanFormDTO loanFormDTO = farmerService.getLoanFormByEmail(farmerDTO.getEmail());
+        if (loanFormDTO == null) {
+            return new ResponseEntity<>("Loan form not found for farmer email: " + farmerDTO.getEmail(), HttpStatus.NOT_FOUND);
+        }
+
+        return new ResponseEntity<>(loanFormDTO, HttpStatus.OK);
+    }
+
 
     @GetMapping("/grievences")
     public ResponseEntity<?> getGrievences(Authentication authentication) {
