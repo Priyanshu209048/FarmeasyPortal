@@ -29,6 +29,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @RestController
@@ -127,21 +128,25 @@ public class FarmerController {
     }
 
     @PutMapping(value = "/updateForm", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> updateLoanFormProcess(@RequestPart("loanFormDTO") @Valid @NonNull String loanFormJson,
-                                                   @RequestPart("aadhaar") MultipartFile aadhaar,
-                                                   @RequestPart("pan") MultipartFile pan,
-                                                   @RequestPart("land") MultipartFile landDetails,
-                                                   Authentication authentication) throws IOException {
+    public ResponseEntity<?> updateLoanFormProcess(
+            @RequestPart("loanFormDTO") String loanFormJson,
+            @RequestPart(value = "aadhaar", required = false) MultipartFile aadhaar,
+            @RequestPart(value = "pan", required = false) MultipartFile pan,
+            @RequestPart(value = "land", required = false) MultipartFile landDetails,
+            Authentication authentication) throws IOException {
 
         ObjectMapper objectMapper = new ObjectMapper();
         LoanFormDTO loanFormDTO = objectMapper.readValue(loanFormJson, LoanFormDTO.class);
 
-        if (!loanFormDTO.getEmail().equals(authentication.getName())) {
+        // Ensure email is not null before comparing
+        if (loanFormDTO.getEmail() == null || !loanFormDTO.getEmail().equals(authentication.getName())) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Unauthorized access.");
         }
 
-        FarmerDTO farmerDTO = this.farmerService.getFarmerByEmail(authentication.getName());
-        LoanFormDTO updatedForm = this.farmerService.updateLoanForm(loanFormDTO, aadhaar, pan, landDetails, farmerDTO.getId());
+        FarmerDTO farmerDTO = farmerService.getFarmerByEmail(authentication.getName());
+
+        LoanFormDTO updatedForm = farmerService.updateLoanForm(
+                loanFormDTO, aadhaar, pan, landDetails, farmerDTO.getId());
 
         return new ResponseEntity<>(updatedForm, HttpStatus.OK);
     }
@@ -195,6 +200,12 @@ public class FarmerController {
     public ResponseEntity<?> getAllSchemes() {
         List<SchemeDTO> schemes = this.bankService.getSchemes();
         return new ResponseEntity<>(schemes, HttpStatus.OK);
+    }
+
+    @GetMapping("/scheme/{id}")
+    public ResponseEntity<SchemeDTO> getSchemeById(@PathVariable Integer id) {
+        SchemeDTO schemeDTO = farmerService.getSchemeById(id);
+        return ResponseEntity.ok(schemeDTO);
     }
 
     @PostMapping("/apply/{schemeId}")

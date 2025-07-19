@@ -13,6 +13,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @SpringBootApplication
@@ -81,10 +82,20 @@ public class FarmeasyPortalApplication implements CommandLineRunner {
     }
 
     public void addGov() {
-        User govUser = new User();
-        govUser.setEmail("central@gov.com");
-        govUser.setPassword(passwordEncoder.encode("12345"));
-        govUser.setRole("ROLE_GOV");
-        userDao.save(govUser);
+        String email = "central@gov.com";
+
+        // Check if the user already exists
+        Optional<User> existingUser = userDao.findByEmail(email);
+
+        if (existingUser.isEmpty()) {
+            User govUser = new User();
+            govUser.setEmail(email);
+            govUser.setPassword(passwordEncoder.encode("12345"));
+            govUser.setRole("ROLE_GOV");
+            userDao.save(govUser);
+        } else {
+            System.out.println("Government user already exists.");
+        }
     }
+
 }

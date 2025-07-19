@@ -262,23 +262,30 @@ public class FarmerServiceImpl implements FarmerService {
     @Override
     public List<ApplyDTO> getApplyStatus(String farmerId) {
         List<Apply> applyList = this.applyDao.findAllByFarmerId(farmerId);
+
         return applyList.stream().map(apply -> {
             ApplyDTO applyDTO = this.modelMapper.map(apply, ApplyDTO.class);
+
             Farmer farmer = this.farmerDao.findById(farmerId).orElseThrow(() ->
                     new ResourceNotFoundException(UsersConstants.FARMER, UsersConstants.ID, farmerId));
 
             Bank bank = this.bankDao.findById(apply.getBankId()).orElseThrow(() ->
                     new ResourceNotFoundException(UsersConstants.BANK, UsersConstants.ID, apply.getBankId()));
 
-            Scheme scheme = this.schemeDao.findById(Integer.valueOf(apply.getSchemeId())).orElseThrow(() ->
+            Scheme scheme = this.schemeDao.findById(apply.getSchemeId()).orElseThrow(() ->
                     new ResourceNotFoundException(UsersConstants.SCHEME, UsersConstants.ID, String.valueOf(apply.getSchemeId())));
+
+            // 🛠️ FIX: manually override status value
+            applyDTO.setStatus(apply.getStatus().name()); // "APPROVED", "REJECTED", etc.
 
             applyDTO.setFarmerDTO(this.modelMapper.map(farmer, FarmerDTO.class));
             applyDTO.setBankDTO(this.modelMapper.map(bank, BankDTO.class));
             applyDTO.setSchemeDTO(this.modelMapper.map(scheme, SchemeDTO.class));
+
             return applyDTO;
         }).collect(Collectors.toList());
     }
+
 
     @Override
     public ItemBookingDTO itemBooking(ItemBookingDTO itemBookingDTO, String farmerId, int itemId) {
@@ -340,4 +347,12 @@ public class FarmerServiceImpl implements FarmerService {
 
         this.grievencesDao.save(grievences);
     }
+
+    @Override
+    public SchemeDTO getSchemeById(Integer schemeId) {
+        Scheme scheme = schemeDao.findById(schemeId).orElseThrow(() ->
+                new ResourceNotFoundException(UsersConstants.SCHEME, UsersConstants.ID, String.valueOf(schemeId)));
+        return modelMapper.map(scheme, SchemeDTO.class);
+    }
+
 }
