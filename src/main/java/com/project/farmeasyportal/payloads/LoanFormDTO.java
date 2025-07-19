@@ -59,8 +59,7 @@ public class LoanFormDTO {
     private String aadhaarPdfName;
 
     @NotNull(message = "PAN number is required")
-    @Digits(integer = 10, fraction = 0, message = "PAN number must be a 10-digit number")
-    private long panNumber;
+    private String panNumber;
 
     @NotBlank(message = "PAN PDF name is required")
     private String panPdfName;

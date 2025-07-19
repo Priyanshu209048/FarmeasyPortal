@@ -1,7 +1,7 @@
 CREATE TABLE Loan_Form (
     id                 INT AUTO_INCREMENT PRIMARY KEY,
     name               VARCHAR(40),
-    email              VARCHAR(20),
+    email              VARCHAR(50),
     contact            VARCHAR(10),
     gender             VARCHAR(10),
     age                int NOT NULL,
@@ -12,7 +12,7 @@ CREATE TABLE Loan_Form (
     pin_code           VARCHAR(6),
     aadhaar_number     DECIMAL(16),
     aadhaar_pdf_name   VARCHAR(255),
-    pan_number         DECIMAL(10),
+    pan_number         VARCHAR(20),
     pan_pdf_name       VARCHAR(255),
     salary             DECIMAL(10, 2),
 

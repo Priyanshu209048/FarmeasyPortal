@@ -5,6 +5,6 @@ CREATE TABLE grievences (
     grievences_date         DATE NOT NULL,
     grievences_type         VARCHAR(255) NOT NULL,
     grievences_description  VARCHAR(500) NOT NULL,
-    grievences_status       VARCHAR(255),
+    grievences_status       VARCHAR(100),
     grievences_review       VARCHAR(500)
 ) ENGINE=InnoDB;
