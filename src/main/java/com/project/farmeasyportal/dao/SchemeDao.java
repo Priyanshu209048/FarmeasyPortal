@@ -12,4 +12,6 @@ public interface SchemeDao extends JpaRepository<Scheme, Integer> {
     List<Scheme> findAllByBankId(String bank);
 
     long countByBankId(String id);
+
+    Scheme findBySchemeCode(String schemeCode);
 }

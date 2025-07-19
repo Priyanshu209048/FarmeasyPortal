@@ -40,8 +40,8 @@ public class DroolsService {
 
     private final KieServices kieServices = KieServices.Factory.get();
 
-    public void createRule(SchemeRule rule, String bankId, int schemeId) throws IOException {
-        File ruleDir = new File("src/main/resources/rules/" + bankId + "/" + schemeId);
+    public void createRule(SchemeRule rule, String bankId, int schemeCode) throws IOException {
+        File ruleDir = new File("src/main/resources/rules/" + bankId + "/" + schemeCode);
         ruleDir.mkdirs();
 
         String ruleFileName = rule.getRuleName() + ".drl";
@@ -56,7 +56,7 @@ public class DroolsService {
         }
 
         KieFileSystem kieFileSystem = kieServices.newKieFileSystem();
-        kieFileSystem.write("rules/" + bankId + "/" + schemeId + "/" + ruleFileName, generateDrlRule(rule));
+        kieFileSystem.write("rules/" + bankId + "/" + schemeCode + "/" + ruleFileName, generateDrlRule(rule));
         KieBuilder builder = kieServices.newKieBuilder(kieFileSystem).buildAll();
         KieModule kieModule = builder.getKieModule();
         kieServices.newKieContainer(kieModule.getReleaseId());
@@ -66,19 +66,21 @@ public class DroolsService {
         Farmer farmer = this.farmerDao.findById(farmerId).orElseThrow(() -> new RuntimeException("Farmer Not Found"));
         LoanForm loanForm = loanFormRepository.findByEmail(farmer.getEmail());
 
-        Apply apply = applyRepository.findByFarmerIdAndSchemeIdAndBankId(farmerId, evaluationRequest.getSchemeId(), evaluationRequest.getBankId());
+        Scheme scheme = schemeDao.findBySchemeCode(evaluationRequest.getSchemeCode());
+
+        Apply apply = applyRepository.findByFarmerIdAndSchemeIdAndBankId(farmerId, scheme.getId(), evaluationRequest.getBankId());
 
         if (apply == null) {
             throw new RuntimeException("No Apply Record Found for this Farmer, Scheme, and Bank");
         }
 
-        KieSession kieSession = reloadKieBase(evaluationRequest.getBankId(), evaluationRequest.getSchemeId());
+        KieSession kieSession = reloadKieBase(evaluationRequest.getBankId(), evaluationRequest.getSchemeCode());
         /*kieSession.insert(loanForm);*/
         kieSession.insert(apply);
         kieSession.insert(evaluationRequest);
         log.info("EvaluationRequest: {}", evaluationRequest);
         int firedRules = kieSession.fireAllRules();
-        log.info("Rules loaded for bankId={}, schemeId={}", evaluationRequest.getBankId(), evaluationRequest.getSchemeId());
+        log.info("Rules loaded for bankId={}, schemeCode={}", evaluationRequest.getBankId(), evaluationRequest.getSchemeCode());
         log.info("Total rules: {}", kieSession.getKieBase().getKiePackages().size());
 
         kieSession.dispose();
@@ -101,17 +103,17 @@ public class DroolsService {
         return apply.getStatus() == Status.PENDING;
     }
 
-    private long getTotalRules(String bankId, Integer schemeId){
+    private long getTotalRules(String bankId, Integer schemeCode){
         try {
-            return Files.walk(Paths.get("src/main/resources/rules/" + bankId + "/" + schemeId + "/")).filter(Files::isRegularFile).count();
+            return Files.walk(Paths.get("src/main/resources/rules/" + bankId + "/" + schemeCode + "/")).filter(Files::isRegularFile).count();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public void deactivateRule(String bankId, String schemeId, String field, String operator, String value) {
+    public void deactivateRule(String bankId, String schemeCode, String field, String operator, String value) {
         String ruleFileName = field.toUpperCase() + "_" + operator + "_" + value + ".drl";
-        File ruleFile = new File("src/main/resources/rules/" + bankId + "/" + schemeId + "/" + ruleFileName);
+        File ruleFile = new File("src/main/resources/rules/" + bankId + "/" + schemeCode + "/" + ruleFileName);
 
         if (ruleFile.exists()) {
             if (ruleFile.delete()) {
@@ -174,16 +176,16 @@ public class DroolsService {
         return thenPart;
     }
 
-    private KieSession reloadKieBase(String bankId, int schemeId) {
+    private KieSession reloadKieBase(String bankId, String schemeCode) {
         KieFileSystem kieFileSystem = kieServices.newKieFileSystem();
 
         try {
-            Files.walk(Paths.get("src/main/resources/rules/" + bankId + "/" + schemeId + "/"))
+            Files.walk(Paths.get("src/main/resources/rules/" + bankId + "/" + schemeCode + "/"))
                     .filter(Files::isRegularFile)
                     .forEach(path -> {
                         try {
                             String fileName = path.getFileName().toString()+".drl";
-                            String relativePath = "src/main/resources/rules/" + bankId + "/" + schemeId + "/" + fileName;
+                            String relativePath = "src/main/resources/rules/" + bankId + "/" + schemeCode + "/" + fileName;
                             kieFileSystem.write(relativePath, new String(Files.readAllBytes(path)));
                         } catch (IOException e) {
                             throw new RuntimeException(e);
