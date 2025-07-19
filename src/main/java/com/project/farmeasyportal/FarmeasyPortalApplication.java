@@ -54,6 +54,7 @@ public class FarmeasyPortalApplication implements CommandLineRunner {
             bank1.setBankZip("110001");
             bank1.setEmail("sbi@bank.com");
             bank1.setBankPhone("9876543210");
+            bank1.setPassword(passwordEncoder.encode("12345"));
 
             Bank bank2 = new Bank();
             bank2.setId(UUID.randomUUID().toString());
@@ -64,6 +65,7 @@ public class FarmeasyPortalApplication implements CommandLineRunner {
             bank2.setBankZip("110095");
             bank2.setEmail("bob@bank.com");
             bank2.setBankPhone("6359874589");
+            bank2.setPassword(passwordEncoder.encode("12345"));
 
             bankDao.saveAll(List.of(bank1, bank2));
             List<Bank> savedBanks = bankDao.findAll();

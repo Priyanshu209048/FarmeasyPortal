@@ -16,7 +16,7 @@ public class EvaluationRequest {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
-    private int schemeId;
+    private String schemeCode;
     private String bankId;
     private int age;
     private long amount;

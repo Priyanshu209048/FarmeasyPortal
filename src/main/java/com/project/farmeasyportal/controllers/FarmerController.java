@@ -6,6 +6,7 @@ import com.project.farmeasyportal.dao.*;
 import com.project.farmeasyportal.entities.Apply;
 import com.project.farmeasyportal.entities.EvaluationRequest;
 import com.project.farmeasyportal.entities.LoanForm;
+import com.project.farmeasyportal.entities.Scheme;
 import com.project.farmeasyportal.exceptions.ResourceNotFoundException;
 import com.project.farmeasyportal.payloads.*;
 import com.project.farmeasyportal.services.BankService;
@@ -45,9 +46,10 @@ public class FarmerController {
     private final DroolsService droolsService;
     private final EvaluationRequestDao evaluationRequestDao;
     private final MerchantService merchantService;
+    private final SchemeDao schemeDao;
 
     @Autowired
-    public FarmerController(FarmerService farmerService, LoanFormDao loanFormDao, BankService bankService, ApplyDao applyDao, ModelMapper modelMapper, DroolsService droolsService, EvaluationRequestDao evaluationRequestDao, MerchantService merchantService) {
+    public FarmerController(FarmerService farmerService, LoanFormDao loanFormDao, BankService bankService, ApplyDao applyDao, ModelMapper modelMapper, DroolsService droolsService, EvaluationRequestDao evaluationRequestDao, MerchantService merchantService, SchemeDao schemeDao) {
         this.farmerService = farmerService;
         this.loanFormDao = loanFormDao;
         this.bankService = bankService;
@@ -56,6 +58,7 @@ public class FarmerController {
         this.droolsService = droolsService;
         this.evaluationRequestDao = evaluationRequestDao;
         this.merchantService = merchantService;
+        this.schemeDao = schemeDao;
     }
 
     private ResponseEntity<?> checkFarmerExists(String farmerID) {
@@ -224,8 +227,10 @@ public class FarmerController {
 
             LoanForm loanForm = this.loanFormDao.findByEmail(farmerDTO.getEmail());
             ApplyDTO applyDTO = this.farmerService.applyLoanScheme(schemeId, farmerDTO.getId(), applyRequestDTO.getAmount());
+            Scheme scheme = this.schemeDao.findById(schemeId).orElseThrow(() ->
+                    new ResourceNotFoundException(UsersConstants.SCHEME, UsersConstants.ID, String.valueOf(schemeId)));
 
-            EvaluationRequest request = EvaluationRequestMapper.fromEntities(loanForm, this.modelMapper.map(applyDTO, Apply.class));
+            EvaluationRequest request = EvaluationRequestMapper.fromEntities(loanForm, this.modelMapper.map(applyDTO, Apply.class), scheme.getSchemeCode());
             this.evaluationRequestDao.save(request);
             /*boolean approved = droolsService.executeRules(farmerDTO.getId(), request.getSchemeId(), request.getBankId());*/
             boolean pending = droolsService.executeRules(request, farmerDTO.getId());
