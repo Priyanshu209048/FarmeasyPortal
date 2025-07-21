@@ -28,7 +28,7 @@ public class LoanForm {
     private String pinCode;
     private long aadhaarNumber;
     private String aadhaarPdfName;
-    private long panNumber;
+    private String panNumber;
     private String panPdfName;
     private long salary;
 
